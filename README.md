@@ -4,7 +4,7 @@
 [![MIT License](https://img.shields.io/badge/license-MIT-f7813f.svg)](LICENSE)
 [![Local first](https://img.shields.io/badge/storage-local--first-30b8b2.svg)](PRIVACY.md)
 
-Private Capture is a calm, local-first writing surface for getting thoughts out of your head without opening a full notes app.
+Private Capture is a mobile-friendly way to add notes to Obsidian without using the Obsidian interface. It saves thoughts and health updates directly as plain Markdown.
 
 Each entry is saved as an ordinary `.md` file inside a folder you explicitly approve. Keep it in Obsidian, sync it with tools you already use, open it in any text editor, or leave it entirely on one device—the files stay yours either way.
 

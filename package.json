@@ -1,7 +1,7 @@
 {
   "name": "private-capture-md",
   "version": "0.1.0",
-  "description": "A calm, local-first capture interface that saves ordinary Markdown to a folder you approve.",
+  "description": "A mobile-friendly way to add notes to Obsidian without using the Obsidian interface.",
   "author": "Shivani Gupta",
   "type": "module",
   "license": "MIT",
