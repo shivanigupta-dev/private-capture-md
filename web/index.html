@@ -1,0 +1,332 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="color-scheme" content="dark" />
+    <meta name="theme-color" content="#07171b" />
+    <meta name="description" content="A quiet, local-first Markdown inbox for thoughts that are not ready to be organized." />
+    <title>Private Capture</title>
+    <link rel="manifest" href="/manifest.webmanifest" />
+    <link rel="apple-touch-icon" href="/icon-192.png" />
+    <link rel="stylesheet" href="/styles.css" />
+    <link rel="stylesheet" href="/health.css" />
+  </head>
+  <body>
+    <main class="shell">
+      <header class="site-header">
+        <div class="wordmark" aria-label="Private Capture, Personal Ecosystem">
+          <strong class="wordmark-title">private<br />capture</strong>
+          <span class="wordmark-caption">Personal Ecosystem</span>
+        </div>
+        <nav class="view-switcher" aria-label="Capture inbox views">
+          <button class="nav-button active" data-view="capture" aria-selected="true"><span class="nav-index">01</span>Capture</button>
+          <button class="nav-button" data-view="review" aria-selected="false"><span class="nav-index">02</span>Review <b id="inbox-count">0</b></button>
+          <button class="nav-button" data-view="health" aria-selected="false"><span class="nav-index">03</span>Health <b id="health-count">0</b></button>
+        </nav>
+        <div class="header-actions">
+          <button id="install-button" class="utility-button" type="button" hidden>Install</button>
+          <div class="text-size" role="group" aria-label="Writing text size">
+            <button type="button" data-text-size="small" aria-label="Smaller writing text">A−</button>
+            <button type="button" data-text-size="medium" aria-label="Default writing text">A</button>
+            <button type="button" data-text-size="large" aria-label="Larger writing text">A+</button>
+          </div>
+          <span class="header-spark" aria-hidden="true">✳</span>
+        </div>
+      </header>
+
+      <section id="unlock-panel" class="unlock-panel" aria-labelledby="unlock-title" hidden>
+        <div>
+          <p class="section-kicker">PRIVATE CONNECTION</p>
+          <h2 id="unlock-title">Unlock your capture space.</h2>
+          <p>This device needs the access token created during network setup. The token is exchanged for a secure session and is never stored by this page.</p>
+        </div>
+        <form id="unlock-form">
+          <label for="access-token">Access token</label>
+          <div><input id="access-token" name="token" type="password" autocomplete="current-password" required /><button type="submit">Unlock</button></div>
+          <p id="unlock-status" role="status" aria-live="polite"></p>
+        </form>
+      </section>
+
+      <section class="hero" aria-labelledby="page-title">
+        <div class="hero-shapes" aria-hidden="true">
+          <span class="shape-orbit"></span>
+          <span class="shape-petal"></span>
+          <span class="shape-sun"></span>
+          <span class="shape-star">✦</span>
+        </div>
+        <div class="hero-copy">
+          <p class="eyebrow">PRIVATE · LOCAL-FIRST · UNFINISHED IS WELCOME</p>
+          <h1 id="page-title"><span>Make room</span><span><em>in your</em> mind.</span></h1>
+          <div class="hero-deck"><span aria-hidden="true">(</span><p>Put the thought somewhere safe before it asks to be organized. Your exact words become a plain Markdown file.</p><span aria-hidden="true">)</span></div>
+        </div>
+
+        <aside id="connection-status" class="system-panel checking" aria-label="Private Capture safety status">
+          <div class="system-summary">
+            <span class="system-light" aria-hidden="true"></span>
+            <div><small>YOUR PRIVATE BOUNDARY</small><strong id="system-state">Checking system…</strong></div>
+          </div>
+          <details class="system-details">
+            <summary>System details</summary>
+            <div class="status-grid">
+              <span><small>ROOT</small><strong id="root-label">Checking…</strong></span>
+              <span><small>MARKER</small><strong id="marker-status">Checking…</strong></span>
+              <span><small>ACCESS</small><strong id="mode-status">Checking…</strong></span>
+              <span><small>LATEST WRITE</small><strong id="write-status">None yet</strong></span>
+            </div>
+          </details>
+        </aside>
+      </section>
+
+      <section id="capture-view" class="view active" aria-labelledby="capture-heading">
+        <form id="capture-form" class="capture-card">
+          <div class="card-rail" aria-hidden="true"><span>01</span><i></i><span>CAPTURE</span></div>
+          <div class="composer">
+            <div class="composer-heading">
+              <div>
+                <p class="section-kicker">START WHERE YOU ARE</p>
+                <h2 id="capture-heading">What’s here right now?</h2>
+              </div>
+              <p id="draft-status" class="draft-status">Nothing leaves this device.</p>
+            </div>
+
+            <fieldset>
+              <legend>Choose a loose shape <span>— you can change your mind later</span></legend>
+              <div class="type-grid" id="capture-types">
+                <label><input type="radio" name="captureType" value="thought" checked /><span><b>01</b>Thought</span></label>
+                <label><input type="radio" name="captureType" value="journal" /><span><b>02</b>Journal</span></label>
+                <label><input type="radio" name="captureType" value="project-update" /><span><b>03</b>Project update</span></label>
+                <label><input type="radio" name="captureType" value="decision" /><span><b>04</b>Decision</span></label>
+                <label><input type="radio" name="captureType" value="question" /><span><b>05</b>Question</span></label>
+                <label><input type="radio" name="captureType" value="link" /><span><b>06</b>Link</span></label>
+                <label><input type="radio" name="captureType" value="task" /><span><b>07</b>Task</span></label>
+              </div>
+            </fieldset>
+
+            <section class="writing-field" aria-labelledby="writing-label">
+              <span class="field-heading"><label id="writing-label" for="capture-text">Your words</label><output id="word-count" for="capture-text">0 words</output></span>
+              <div class="editor-shell">
+                <div class="format-toolbar" role="toolbar" aria-label="Markdown formatting">
+                  <button type="button" class="format-button" data-format="bold" aria-label="Bold" title="Bold (Command or Control B)"><strong>B</strong></button>
+                  <button type="button" class="format-button" data-format="italic" aria-label="Italic" title="Italic (Command or Control I)"><em>I</em></button>
+                  <button type="button" class="format-button" data-format="heading" aria-label="Heading" title="Heading">H1</button>
+                  <button type="button" class="format-button format-icon" data-format="link" aria-label="Link" title="Link (Command or Control K)">↗</button>
+                  <button type="button" class="format-button format-icon" data-format="list" aria-label="Bulleted list" title="Bulleted list">≡</button>
+                  <button type="button" class="format-button format-icon" data-format="quote" aria-label="Quote" title="Quote">“</button>
+                </div>
+                <div class="editor-stage">
+                  <div class="editor-header">
+                    <div class="editor-modes" aria-label="Editor view">
+                      <button type="button" class="editor-mode active" data-editor-mode="write" aria-pressed="true">Write</button>
+                      <button type="button" class="editor-mode" data-editor-mode="preview" aria-pressed="false">Preview</button>
+                    </div>
+                    <span>Markdown · Obsidian-ready</span>
+                  </div>
+                  <textarea id="capture-text" name="text" required autofocus placeholder="Write it as it comes. Fragments, questions, half-formed ideas—all welcome."></textarea>
+                  <article id="capture-preview" class="markdown-preview" aria-label="Formatted preview" hidden></article>
+                </div>
+              </div>
+              <p class="format-help">Select text, then format it—or keep writing naturally. The saved capture stays plain Markdown.</p>
+            </section>
+
+            <details class="optional-details">
+              <summary><span>Optional context</span><small>A title, project, link, or date</small></summary>
+              <div class="details-grid">
+                <label><span>Title</span><input name="title" maxlength="240" placeholder="Only if one comes naturally" /></label>
+                <label><span>Source link</span><input name="sourceUrl" type="url" placeholder="https://" /></label>
+                <label><span>Date it belongs to</span><input name="occurredOn" type="date" /></label>
+              </div>
+            </details>
+
+            <div class="form-footer">
+              <div class="privacy-promise">
+                <span class="privacy-dot" aria-hidden="true"></span>
+                <p><strong>Private by default.</strong> Saved exactly as written.</p>
+              </div>
+              <div class="save-actions">
+                <button id="download-button" class="download-button" type="button">Download .md</button>
+                <button class="save-button" type="submit"><span>Save private capture</span><kbd id="shortcut-label">⌘ ↵</kbd></button>
+              </div>
+            </div>
+            <p id="save-status" class="status" role="status" aria-live="polite"></p>
+          </div>
+        </form>
+      </section>
+
+      <section id="review-view" class="view" aria-labelledby="review-heading-title">
+        <div class="review-heading">
+          <div>
+            <p class="section-kicker">A QUIET SECOND PASS</p>
+            <h2 id="review-heading-title">Your thinking,<br /><em>waiting calmly.</em></h2>
+            <p>Nothing moves and nothing is rewritten. You’re only leaving a suggestion for later.</p>
+          </div>
+          <div class="review-tools">
+            <p id="review-result-count">Loading inbox…</p>
+            <div class="filters">
+              <label><span>Show</span><select id="filter-type"><option value="">Every type</option><option value="thought">Thoughts</option><option value="journal">Journal</option><option value="project-update">Project updates</option><option value="decision">Decisions</option><option value="question">Questions</option><option value="link">Links</option><option value="task">Tasks</option></select></label>
+              <label class="search"><span>Find</span><input id="filter-search" type="search" placeholder="Search your words" /></label>
+            </div>
+          </div>
+        </div>
+        <div id="capture-list" class="capture-list"></div>
+        <div id="empty-state" class="empty-state" hidden><span aria-hidden="true">◎</span><h3>Your inbox is clear.</h3><p>New captures will wait here without asking anything of you.</p></div>
+      </section>
+
+      <section id="health-view" class="view health-view" aria-labelledby="health-heading-title">
+        <header class="health-heading">
+          <div>
+            <p class="section-kicker">A PRIVATE, LONGITUDINAL RECORD</p>
+            <h2 id="health-heading-title">A body<br /><em>of notes.</em></h2>
+            <p>Visits, symptoms, therapy, and progress—kept in your own words as plain Markdown.</p>
+          </div>
+          <div class="health-heading-actions">
+            <span class="health-private-badge"><i></i>Private · local-first</span>
+            <button id="new-health-entry" class="health-primary-button" type="button"><span>＋</span> Add health entry</button>
+          </div>
+        </header>
+
+        <section class="health-quick-card" aria-labelledby="health-quick-title">
+          <div class="health-quick-copy">
+            <span aria-hidden="true">✦</span>
+            <div><h3 id="health-quick-title">What would you like to remember?</h3><p>Start with a type. Only the date and a short title are required.</p></div>
+          </div>
+          <div id="health-quick-types" class="health-quick-types"></div>
+        </section>
+
+        <div class="health-dashboard-grid">
+          <section class="health-panel" aria-labelledby="health-due-heading">
+            <div class="health-panel-heading"><div><span aria-hidden="true">◷</span><h3 id="health-due-heading">Upcoming & due soon</h3></div><button type="button" data-health-scope-jump="preventive">Preventive care →</button></div>
+            <div id="health-due-list" class="health-due-list"></div>
+            <div id="health-due-empty" class="health-panel-empty"><span aria-hidden="true">○</span><div><strong>Nothing due yet</strong><p>Add a next appointment, follow-up, or due date to see it here.</p></div></div>
+          </section>
+          <section class="health-panel health-progress-panel" aria-labelledby="health-progress-heading">
+            <div class="health-panel-heading"><div><span aria-hidden="true">↗</span><h3 id="health-progress-heading">Journal at a glance</h3></div></div>
+            <div class="health-stats">
+              <button type="button" data-health-scope-jump="all"><strong id="health-total-stat">0</strong><span>Total entries</span></button>
+              <button type="button" data-health-scope-jump="therapy"><strong id="health-therapy-stat">0</strong><span>Therapy visits</span></button>
+              <button type="button" data-health-scope-jump="symptoms"><strong id="health-symptom-stat">0</strong><span>Symptom notes</span></button>
+            </div>
+            <div id="health-month-bars" class="health-month-bars" aria-label="Entries recorded by month"></div>
+            <p>Counts reflect what you recorded. No health conclusions are generated.</p>
+          </section>
+        </div>
+
+        <section class="health-timeline-section" aria-labelledby="health-timeline-heading">
+          <div class="health-timeline-heading">
+            <div><p class="section-kicker">YOUR HISTORY, IN ORDER</p><h3 id="health-timeline-heading">Health timeline</h3></div>
+            <button id="health-pelvic-jump" type="button">Jump to pelvic floor therapy ↓</button>
+          </div>
+          <div class="health-scope-tabs" role="group" aria-label="Health timeline views">
+            <button type="button" class="active" data-health-scope="all" aria-pressed="true">All</button>
+            <button type="button" data-health-scope="therapy" aria-pressed="false">Therapy</button>
+            <button type="button" data-health-scope="symptoms" aria-pressed="false">Symptoms</button>
+            <button type="button" data-health-scope="preventive" aria-pressed="false">Preventive</button>
+          </div>
+          <div class="health-filters">
+            <label class="health-search"><span>Find in your notes</span><input id="health-search" type="search" placeholder="Search provider, category, or words" /></label>
+            <label><span>Category</span><select id="health-category-filter"><option value="">Every category</option></select></label>
+            <label><span>From</span><input id="health-date-from" type="date" /></label>
+            <label><span>To</span><input id="health-date-to" type="date" /></label>
+          </div>
+          <div id="health-results-label" class="health-results-label">Loading your journal…</div>
+          <div id="health-upcoming-group" class="health-timeline-group" hidden><div class="health-group-label"><span>Upcoming care</span><i id="health-upcoming-count">0</i></div><div id="health-upcoming-list" class="health-event-list"></div></div>
+          <div id="health-history-group" class="health-timeline-group"><div class="health-group-label"><span>History</span><i id="health-history-count">0</i></div><div id="health-history-list" class="health-event-list"></div></div>
+          <div id="health-empty" class="health-empty" hidden><span aria-hidden="true">◎</span><h4>Your health journal is ready.</h4><p>A sentence is enough. Add as much structure as is useful to you.</p><button type="button" class="health-secondary-button">Add the first entry</button></div>
+        </section>
+        <p class="health-disclaimer">This journal records your information. It does not diagnose conditions or provide medical advice.</p>
+      </section>
+
+      <footer class="site-footer">
+        <span>PERSONAL ECOSYSTEM</span>
+        <p>Local software for a quieter inner life.</p>
+        <span id="today-label"></span>
+      </footer>
+    </main>
+
+    <template id="capture-template">
+      <article class="review-card">
+        <div class="review-card-index" aria-hidden="true"></div>
+        <div class="review-card-content">
+          <div class="review-meta"><span class="type-pill"></span><time></time></div>
+          <h3></h3>
+          <p class="capture-body"></p>
+          <p class="related-project"></p>
+          <label class="proposal"><span>Where might this belong?</span><select><option value="">Decide another day</option><option value="journal-entry">Journal entry</option><option value="project-update">Project update</option><option value="decision">Decision</option><option value="question">Question to explore</option><option value="task">Task</option><option value="reference">Reference</option><option value="keep-in-inbox">Keep in inbox</option></select></label>
+          <p class="review-status" role="status" aria-live="polite"></p>
+        </div>
+      </article>
+    </template>
+    <template id="health-event-template">
+      <article class="health-event-card">
+        <div class="health-date-tile"><span></span><strong></strong><small></small></div>
+        <div class="health-event-content">
+          <div class="health-event-meta"><span class="health-category-pill"><i></i><b></b></span><time></time><span class="health-revision-badge"></span></div>
+          <div class="health-event-title-row"><div><h4></h4><p class="health-event-provider"></p></div><button class="health-edit-button" type="button">Edit <span>↗</span></button></div>
+          <p class="health-event-summary"></p>
+          <div class="health-tag-list"></div>
+          <details class="health-event-details"><summary>View full record <span>⌄</span></summary><div class="health-detail-grid"></div></details>
+        </div>
+      </article>
+    </template>
+
+    <dialog id="health-dialog" class="health-dialog" aria-labelledby="health-dialog-title">
+      <form id="health-form">
+        <header>
+          <div><p>PRIVATE HEALTH JOURNAL</p><h2 id="health-dialog-title">Add a health entry</h2><small id="health-edit-note" hidden>Saving creates a new append-only revision; the earlier file stays untouched.</small></div>
+          <button id="close-health-dialog" type="button" aria-label="Close health entry">×</button>
+        </header>
+        <div class="health-form-body">
+          <fieldset class="health-category-fieldset">
+            <legend>What kind of entry is this?</legend>
+            <div id="health-category-chips" class="health-category-chips"></div>
+            <label id="health-custom-category-wrap" class="health-custom-category" hidden><span>Custom category name</span><input id="health-custom-category" maxlength="80" placeholder="e.g. Nutrition" /></label>
+          </fieldset>
+          <div class="health-form-grid two">
+            <label><span>Date <b>*</b></span><input name="eventDate" type="date" required /></label>
+            <label><span>Time <small>optional</small></span><input name="eventTime" type="time" /></label>
+          </div>
+          <label class="health-form-field"><span>Short title <b>*</b></span><input name="title" maxlength="160" required placeholder="A few words to recognize this later" /></label>
+          <div class="health-form-grid two">
+            <label><span id="health-provider-label">Provider or therapist</span><input name="provider" maxlength="160" placeholder="Name" /></label>
+            <label><span>Clinic / facility</span><input name="facility" maxlength="160" placeholder="Optional" /></label>
+          </div>
+          <label class="health-form-field"><span>Notes</span><textarea name="notes" rows="5" placeholder="Write what you want to remember in your own words…"></textarea></label>
+
+          <section id="health-guided-section" class="health-guided-section" hidden>
+            <div class="health-guided-heading"><div><h3>Guided details</h3><p>Use only the fields that help.</p></div><button id="health-carry-forward" type="button" hidden>↻ Carry forward exercises</button></div>
+            <div id="health-guided-fields" class="health-form-grid two"></div>
+          </section>
+
+          <details id="health-more-details" class="health-more-details">
+            <summary><span>Visit details, follow-up, and tags</span><small>Optional</small></summary>
+            <div class="health-form-grid two">
+              <label><span>Appointment type</span><input name="appointmentType" maxlength="160" placeholder="e.g. follow-up, cleaning, consultation" /></label>
+              <label id="health-related-event-wrap" hidden><span>Related health event</span><select id="health-related-event" name="relatedEventId"><option value="">None</option></select></label>
+              <label><span>Reason for visit</span><textarea name="reason" rows="3"></textarea></label>
+              <label><span>Symptoms or concerns</span><textarea name="symptoms" rows="3"></textarea></label>
+              <label><span>Questions I wanted to ask</span><textarea name="questions" rows="3"></textarea></label>
+              <label><span>What was discussed</span><textarea name="discussed" rows="3"></textarea></label>
+              <label><span>Treatment performed</span><textarea name="treatment" rows="3"></textarea></label>
+              <label><span>Recommendations / instructions</span><textarea name="recommendations" rows="3"></textarea></label>
+            </div>
+            <label class="health-form-field"><span>Progress notes</span><textarea name="progressNotes" rows="3"></textarea></label>
+            <label class="health-follow-check"><input name="followUpNeeded" type="checkbox" /><span>✓ Follow-up needed</span></label>
+            <div class="health-form-grid three">
+              <label><span>Follow-up date</span><input name="followUpDate" type="date" /></label>
+              <label><span>Next appointment</span><input name="nextAppointment" type="datetime-local" /></label>
+              <label><span>Next due date</span><input name="nextDueDate" type="date" /></label>
+            </div>
+            <div class="health-form-grid two">
+              <label><span>Recommended return interval</span><select name="recurrenceMonths"><option value="">Not set</option><option value="3">3 months</option><option value="6">6 months</option><option value="12">12 months</option><option value="18">18 months</option><option value="24">2 years</option><option value="36">3 years</option><option value="60">5 years</option></select></label>
+              <label><span>Tags</span><input name="tags" placeholder="e.g. follow-up, left knee" /></label>
+            </div>
+          </details>
+          <p id="health-form-status" class="health-form-status" role="status" aria-live="polite"></p>
+        </div>
+        <footer><span><i></i>Stored as private Markdown in your approved folder</span><div><button id="cancel-health-entry" type="button">Cancel</button><button id="save-health-entry" type="submit">Add to journal</button></div></footer>
+      </form>
+    </dialog>
+    <script src="/app.js" type="module"></script>
+    <script src="/health.js" type="module"></script>
+  </body>
+</html>

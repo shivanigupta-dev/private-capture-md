@@ -1,0 +1,24 @@
+name: Feature request
+description: Propose a focused improvement to the capture path.
+title: "idea: "
+labels: [enhancement]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: What problem would this solve?
+      description: Start with the human need rather than an implementation.
+    validations:
+      required: true
+  - type: textarea
+    id: fit
+    attributes:
+      label: Why does it belong in Private Capture?
+      description: Explain the effect on file permissions, recovery, privacy, and product scope.
+    validations:
+      required: true
+  - type: textarea
+    id: alternative
+    attributes:
+      label: What do you do today?
+      description: Existing workarounds often reveal a smaller solution.

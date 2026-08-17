@@ -1,0 +1,35 @@
+[Unit]
+Description=Private Capture
+After=network.target
+
+[Service]
+Type=simple
+User=private-capture
+Group=private-capture
+WorkingDirectory=/opt/private-capture
+ExecStart=/usr/bin/node /opt/private-capture/src/cli/main.ts serve --config /etc/private-capture/config.json
+Restart=on-failure
+RestartSec=3
+UMask=0077
+
+NoNewPrivileges=true
+PrivateTmp=true
+PrivateDevices=true
+ProtectSystem=strict
+ProtectHome=true
+ProtectClock=true
+ProtectKernelTunables=true
+ProtectKernelModules=true
+ProtectKernelLogs=true
+ProtectControlGroups=true
+RestrictSUIDSGID=true
+RestrictRealtime=true
+LockPersonality=true
+RestrictAddressFamilies=AF_UNIX AF_INET AF_INET6
+
+# Replace this example with the exact approved root and config directory.
+ReadWritePaths=/srv/notes/vault/Private\x20Capture
+ReadOnlyPaths=/etc/private-capture /opt/private-capture
+
+[Install]
+WantedBy=multi-user.target

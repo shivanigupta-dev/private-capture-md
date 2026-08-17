@@ -1,0 +1,11 @@
+# Replace capture.home.arpa with a hostname that resolves only inside your VPN.
+# Install Caddy's local CA certificate on each client before using this profile.
+https://capture.home.arpa {
+    tls internal
+    reverse_proxy 127.0.0.1:3217
+
+    # Private thoughts do not belong in routine access logs.
+    log {
+        output discard
+    }
+}

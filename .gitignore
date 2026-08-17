@@ -1,0 +1,14 @@
+node_modules/
+.DS_Store
+coverage/
+*.log
+*.tmp
+
+# Local roots, tokens, and machine-specific configuration never belong in Git.
+.private-capture/
+private-capture.config.json
+*.local.json
+
+# Editors
+.idea/
+.vscode/
