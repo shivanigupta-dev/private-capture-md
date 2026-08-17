@@ -1,7 +1,7 @@
 {
   "name": "private-capture-md",
   "version": "0.1.0",
-  "description": "A local-first, self-hostable Markdown inbox for Obsidian-compatible vaults.",
+  "description": "A calm, local-first capture interface that saves ordinary Markdown to a folder you approve.",
   "author": "Shivani Gupta",
   "type": "module",
   "license": "MIT",

@@ -4,15 +4,15 @@
 [![MIT License](https://img.shields.io/badge/license-MIT-f7813f.svg)](LICENSE)
 [![Local first](https://img.shields.io/badge/storage-local--first-30b8b2.svg)](PRIVACY.md)
 
-Private Capture is a small, local-first inbox for people who like Markdown but do not always want to open a full notes app just to write something down.
+Private Capture is a calm, local-first writing surface for getting thoughts out of your head without opening a full notes app.
 
-It gives you a calm, mobile-friendly writing surface and saves each entry as an ordinary `.md` file. The files work in Obsidian, VS Code, a text editor, or anything else that understands folders and Markdown.
+Each entry is saved as an ordinary `.md` file inside a folder you explicitly approve. Keep it in Obsidian, sync it with tools you already use, open it in any text editor, or leave it entirely on one device—the files stay yours either way.
 
-No account. No database. No analytics. No AI. The default setup stays on your computer.
+No account. No database. No analytics. No AI features or external model calls. The default setup stays on your computer.
 
 ![Private Capture writing interface](docs/assets/capture-empty-state.jpg)
 
-> **Early alpha:** the file-safety model is implemented and tested, but this project has not had an independent security review. Keep backups and read the threat model before exposing it to a network.
+> **Early alpha and development disclosure:** Private Capture is a vibe-coded project built with AI-assisted development tools and maintained by Shivani Gupta. Its file-safety model is implemented and tested, but it has not had an independent security review. Review the code, keep backups, and read the threat model before trusting it with sensitive data or network access.
 
 ## What it is
 
