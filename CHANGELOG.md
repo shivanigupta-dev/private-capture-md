@@ -20,4 +20,9 @@ All notable changes will be documented here. The format follows [Keep a Changelo
 - Google Drive and provider-neutral folder-sync guidance
 - Synthetic safety, concurrency, marker-failure, and server-authentication tests
 
+### Changed
+
+- Added a ceramic-inspired surface texture with mottled color, fine grain, speckles, and subtly irregular panels
+- Reduced the default editor text to a normal reading size and placed small, standard, and large display controls inside the editor
+
 [Unreleased]: https://github.com/shivanigupta-dev/private-capture-md/commits/main/

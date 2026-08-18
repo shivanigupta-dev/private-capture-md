@@ -20,8 +20,11 @@ body[data-active-view="health"] .hero { display: none; }
   padding: 64px 5vw;
   overflow: hidden;
   border: 1px solid var(--health-border);
-  border-radius: 44px;
+  border-radius: 46px 39px 48px 42px / 41px 48px 40px 46px;
   background:
+    radial-gradient(ellipse at 13% 16%, rgba(255, 242, 223, .11), transparent 22%),
+    radial-gradient(circle, rgba(255, 242, 223, .1) 0 .7px, transparent 1px) 3px 7px / 19px 23px,
+    radial-gradient(circle, rgba(255, 122, 47, .1) 0 .55px, transparent .9px) 11px 2px / 31px 29px,
     radial-gradient(circle at 80% 15%, rgba(201, 184, 255, .24), transparent 19rem),
     radial-gradient(circle at 9% 95%, rgba(0, 165, 165, .22), transparent 22rem),
     linear-gradient(145deg, #0c3c45, #171b32 80%);
@@ -95,8 +98,11 @@ body[data-active-view="health"] .hero { display: none; }
   margin-top: 18px;
   padding: 25px 27px;
   border: 1px solid rgba(201, 184, 255, .48);
-  border-radius: 26px;
-  background: linear-gradient(115deg, rgba(90, 49, 136, .42), rgba(7, 93, 104, .47));
+  border-radius: 27px 22px 28px 24px / 24px 28px 22px 27px;
+  background:
+    radial-gradient(ellipse at 7% 15%, rgba(255, 242, 223, .11), transparent 24%),
+    radial-gradient(circle, rgba(255, 242, 223, .09) 0 .6px, transparent .9px) 0 0 / 18px 21px,
+    linear-gradient(115deg, rgba(90, 49, 136, .48), rgba(7, 93, 104, .52));
 }
 .health-quick-copy { display: flex; align-items: center; gap: 13px; }
 .health-quick-copy > span { display: grid; width: 42px; height: 42px; flex: 0 0 auto; place-items: center; border-radius: 50%; color: var(--ink-deep); background: var(--signal); }
@@ -126,7 +132,16 @@ body[data-active-view="health"] .hero { display: none; }
 .tone-stone { --tone: #b9c0bc; --tone-soft: rgba(185, 192, 188, .13); }
 
 .health-dashboard-grid { display: grid; grid-template-columns: 1.25fr .9fr; gap: 14px; margin-top: 14px; }
-.health-panel { min-height: 265px; padding: 23px 25px; border: 1px solid var(--health-border); border-radius: 24px; background: var(--health-panel); }
+.health-panel {
+  min-height: 265px;
+  padding: 23px 25px;
+  border: 1px solid var(--health-border);
+  border-radius: 25px 21px 26px 22px / 22px 26px 21px 25px;
+  background:
+    radial-gradient(ellipse at 9% 7%, rgba(255, 242, 223, .08), transparent 30%),
+    radial-gradient(circle, rgba(201, 184, 255, .08) 0 .55px, transparent .9px) 4px 3px / 23px 19px,
+    var(--health-panel);
+}
 .health-panel-heading { display: flex; align-items: center; justify-content: space-between; gap: 18px; margin-bottom: 16px; }
 .health-panel-heading > div { display: flex; align-items: center; gap: 9px; }
 .health-panel-heading > div > span { color: var(--signal); }
@@ -189,8 +204,23 @@ body[data-active-view="health"] .hero { display: none; }
 .health-group-label i { min-width: 20px; padding: 3px 6px; border-radius: 999px; color: var(--lavender); background: var(--safe-soft); font-style: normal; text-align: center; }
 .health-event-list { display: grid; gap: 10px; }
 
-.health-event-card { display: grid; grid-template-columns: 57px minmax(0, 1fr); gap: 17px; padding: 18px; border: 1px solid rgba(201, 184, 255, .42); border-radius: 20px; background: rgba(9, 43, 51, .78); transition: border 150ms ease, transform 150ms ease, box-shadow 150ms ease; }
-.health-event-card:nth-child(even) { background: rgba(38, 27, 59, .64); }
+.health-event-card {
+  display: grid;
+  grid-template-columns: 57px minmax(0, 1fr);
+  gap: 17px;
+  padding: 18px;
+  border: 1px solid rgba(201, 184, 255, .42);
+  border-radius: 21px 18px 22px 19px / 19px 22px 18px 21px;
+  background:
+    radial-gradient(circle, rgba(255, 242, 223, .07) 0 .5px, transparent .8px) 2px 5px / 19px 23px,
+    rgba(9, 43, 51, .8);
+  transition: border 150ms ease, transform 150ms ease, box-shadow 150ms ease;
+}
+.health-event-card:nth-child(even) {
+  background:
+    radial-gradient(circle, rgba(255, 122, 47, .065) 0 .5px, transparent .8px) 2px 5px / 21px 19px,
+    rgba(38, 27, 59, .68);
+}
 .health-event-card:hover { border-color: var(--signal); transform: translateY(-2px); box-shadow: 0 18px 45px rgba(0,0,0,.18); }
 .health-date-tile { display: flex; width: 52px; height: 66px; flex-direction: column; align-items: center; justify-content: center; border-radius: 14px; color: var(--ink-deep); background: var(--lavender); }
 .health-date-tile span { font-size: .52rem; font-weight: 850; letter-spacing: .08em; text-transform: uppercase; }

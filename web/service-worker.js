@@ -1,4 +1,4 @@
-const CACHE_NAME = "private-capture-shell-v6";
+const CACHE_NAME = "private-capture-shell-v8";
 const SHELL = ["/", "/styles.css", "/health.css", "/app.js", "/health.js", "/manifest.webmanifest", "/icon-192.png", "/icon-512.png"];
 
 self.addEventListener("install", (event) => {

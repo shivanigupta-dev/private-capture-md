@@ -120,13 +120,21 @@
                       <button type="button" class="editor-mode active" data-editor-mode="write" aria-pressed="true">Write</button>
                       <button type="button" class="editor-mode" data-editor-mode="preview" aria-pressed="false">Preview</button>
                     </div>
-                    <span>Markdown · Obsidian-ready</span>
+                    <div class="editor-display-controls">
+                      <span>Markdown · Obsidian-ready</span>
+                      <div class="editor-text-size" role="group" aria-label="Editor text size">
+                        <span>Text size</span>
+                        <button type="button" data-text-size="small" aria-label="Smaller editor text">A−</button>
+                        <button type="button" data-text-size="medium" aria-label="Standard editor text">A</button>
+                        <button type="button" data-text-size="large" aria-label="Larger editor text">A+</button>
+                      </div>
+                    </div>
                   </div>
                   <textarea id="capture-text" name="text" required autofocus placeholder="Write it as it comes. Fragments, questions, half-formed ideas—all welcome."></textarea>
                   <article id="capture-preview" class="markdown-preview" aria-label="Formatted preview" hidden></article>
                 </div>
               </div>
-              <p class="format-help">Select text, then format it—or keep writing naturally. The saved capture stays plain Markdown.</p>
+              <p class="format-help">Text size only changes this screen. Your saved Markdown stays exactly the same.</p>
             </section>
 
             <details class="optional-details">
