@@ -72,7 +72,7 @@ export function createApprovalMarker(rootName: string, now = new Date()): Approv
     root_id: `pcr_${randomUUID()}`,
     schema_version: MARKER_VERSION,
     created_at: now.toISOString(),
-    purpose: "Bounded, append-only Markdown capture, health journaling, and separate review proposals.",
+    purpose: "Bounded, append-only Markdown capture, health, vehicle, and workout journaling, and separate review proposals.",
     authorized_application: APPLICATION_ID,
     capabilities: EXPECTED_CAPABILITIES.map((capability) => ({ ...capability, operations: [...capability.operations] })),
     ownership_boundary: OWNERSHIP_BOUNDARY,

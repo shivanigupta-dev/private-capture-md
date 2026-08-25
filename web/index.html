@@ -11,6 +11,9 @@
     <link rel="apple-touch-icon" href="/icon-192.png" />
     <link rel="stylesheet" href="/styles.css" />
     <link rel="stylesheet" href="/health.css" />
+    <link rel="stylesheet" href="/car.css?v=1" />
+    <link rel="stylesheet" href="/workout.css?v=1" />
+    <link rel="stylesheet" href="/voice.css?v=1" />
   </head>
   <body>
     <main class="shell">
@@ -23,6 +26,8 @@
           <button class="nav-button active" data-view="capture" aria-selected="true"><span class="nav-index">01</span>Capture</button>
           <button class="nav-button" data-view="review" aria-selected="false"><span class="nav-index">02</span>Review <b id="inbox-count">0</b></button>
           <button class="nav-button" data-view="health" aria-selected="false"><span class="nav-index">03</span>Health <b id="health-count">0</b></button>
+          <button class="nav-button" data-view="car" aria-selected="false"><span class="nav-index">04</span>Car <b id="car-count">0</b></button>
+          <button class="nav-button" data-view="workout" aria-selected="false"><span class="nav-index">05</span>Workout <b id="workout-count">0</b></button>
         </nav>
         <div class="header-actions">
           <button id="install-button" class="utility-button" type="button" hidden>Install</button>
@@ -244,6 +249,138 @@
         <p class="health-disclaimer">This journal records your information. It does not diagnose conditions or provide medical advice.</p>
       </section>
 
+      <section id="car-view" class="view car-view" aria-labelledby="car-heading-title">
+        <header class="car-heading">
+          <div>
+            <p class="section-kicker">THE RECORD IN THE GLOVEBOX, BUT FINDABLE</p>
+            <h2 id="car-heading-title">Keep the miles.<br /><em>Remember the work.</em></h2>
+            <p>Service, repairs, costs, and the small details you’ll want the next time a dashboard light appears.</p>
+          </div>
+          <div class="car-heading-actions">
+            <button id="add-vehicle" class="car-ghost-button" type="button"><span>＋</span> Add vehicle</button>
+            <button id="new-car-entry" class="car-primary-button" type="button"><span>＋</span> Log maintenance</button>
+          </div>
+        </header>
+
+        <section id="car-garage" class="car-garage" aria-labelledby="car-garage-title">
+          <div>
+            <p id="car-garage-title">MY GARAGE</p>
+            <div id="vehicle-tabs" class="vehicle-tabs" role="tablist" aria-label="Vehicles"></div>
+          </div>
+          <div class="car-reference-links">
+            <a id="car-manual-link" href="#" target="_blank" rel="noreferrer" hidden>Owner’s manual ↗</a>
+            <a href="https://www.nhtsa.gov/recalls" target="_blank" rel="noreferrer">Check recalls at NHTSA ↗</a>
+          </div>
+        </section>
+
+        <section id="car-empty" class="car-empty" hidden>
+          <div class="car-empty-mark" aria-hidden="true"><span>◎</span><i></i></div>
+          <div><p class="section-kicker">YOUR GARAGE STARTS HERE</p><h3>Add the car you want<br />to remember.</h3><p>No VIN needed. A nickname is enough; make, model, manual, and units are optional.</p><button type="button" class="car-primary-button">Add your first vehicle</button></div>
+        </section>
+
+        <div id="car-dashboard" hidden>
+          <section class="car-quick-card" aria-labelledby="car-quick-title">
+            <div class="car-quick-copy"><span aria-hidden="true">✦</span><div><h3 id="car-quick-title">What did the car need?</h3><p>Pick a starting point. Every extra field is optional.</p></div></div>
+            <div id="car-quick-types" class="car-quick-types"></div>
+          </section>
+
+          <section class="car-stats" aria-label="Vehicle at a glance">
+            <article><span class="car-stat-icon orange">↗</span><div><small>LATEST ODOMETER</small><strong id="car-mileage-stat">—</strong><p id="car-mileage-note">Add it when useful</p></div></article>
+            <article><span class="car-stat-icon lavender">◷</span><div><small>NEXT THING DUE</small><strong id="car-next-stat">Nothing yet</strong><p id="car-next-note">Use your owner’s manual</p></div></article>
+            <article><span class="car-stat-icon peacock">◇</span><div><small>SERVICE RECORDS</small><strong id="car-record-stat">0</strong><p>For this vehicle</p></div></article>
+            <article><span class="car-stat-icon purple">$</span><div><small>SPEND THIS YEAR</small><strong id="car-spend-stat">—</strong><p>Only costs you record</p></div></article>
+          </section>
+
+          <div class="car-dashboard-grid">
+            <section class="car-panel" aria-labelledby="car-due-title">
+              <div class="car-panel-heading"><div><span aria-hidden="true">◷</span><div><p>COMING UP</p><h3 id="car-due-title">Dates & mileage to watch</h3></div></div><small>From your entries</small></div>
+              <div id="car-due-list" class="car-due-list"></div>
+              <div id="car-due-empty" class="car-panel-empty"><span>○</span><div><strong>No reminders yet</strong><p>Add a next-due date or odometer to any service record.</p></div></div>
+            </section>
+            <aside class="car-schedule-note">
+              <span aria-hidden="true">⌁</span>
+              <div><p>THE HONEST SCHEDULE</p><h3>Your car’s manual wins.</h3><p>Maintenance intervals vary by vehicle and driving conditions, so this app remembers the schedule you choose instead of inventing one.</p></div>
+              <a id="car-schedule-link" href="https://www.nhtsa.gov/recalls" target="_blank" rel="noreferrer">Open recall lookup ↗</a>
+            </aside>
+          </div>
+
+          <section class="car-history" aria-labelledby="car-history-title">
+            <div class="car-history-heading"><div><p class="section-kicker">THE PAPER TRAIL, WITHOUT THE PAPER</p><h3 id="car-history-title">Maintenance history</h3></div><button id="car-log-another" type="button">＋ Add record</button></div>
+            <div class="car-filters">
+              <label class="car-search"><span>Find in this car’s history</span><input id="car-search" type="search" placeholder="Search work, shop, parts, or notes" /></label>
+              <label><span>Type</span><select id="car-category-filter"><option value="">Every type</option></select></label>
+              <label><span>Year</span><select id="car-year-filter"><option value="">Every year</option></select></label>
+            </div>
+            <div id="car-results-label" class="car-results-label">Loading maintenance…</div>
+            <div id="car-event-list" class="car-event-list"></div>
+            <div id="car-history-empty" class="car-history-empty" hidden><span>◎</span><h4>Nothing logged for this car yet.</h4><p>Start with the last service you remember—or simply begin with the next one.</p><button type="button" class="car-ghost-button">Log the first record</button></div>
+          </section>
+        </div>
+        <p class="car-disclaimer">A personal record, not a diagnostic tool. For service intervals and safety guidance, follow your vehicle manufacturer and qualified professionals.</p>
+      </section>
+
+      <section id="workout-view" class="view workout-view" aria-labelledby="workout-heading-title">
+        <header class="workout-heading">
+          <div>
+            <p class="section-kicker">A RECORD OF SHOWING UP</p>
+            <h2 id="workout-heading-title">The work<br /><em>adds up.</em></h2>
+            <p>One lift, climb, or run at a time—quick to log, clear enough to show where you’re getting stronger.</p>
+          </div>
+          <div class="workout-heading-actions">
+            <span><i></i>Private · plain Markdown</span>
+            <button id="new-workout-entry" class="workout-primary-button" type="button"><b>＋</b> Log a workout</button>
+          </div>
+        </header>
+
+        <nav class="workout-mode-switch" aria-label="Workout activity views">
+          <button type="button" class="active" data-workout-mode="lift" aria-pressed="true"><span>01</span><b>Lift</b><small>Weight · reps · sets</small></button>
+          <button type="button" data-workout-mode="climb" aria-pressed="false"><span>02</span><b>Climb</b><small>Grade · attempts · send</small></button>
+          <button type="button" data-workout-mode="run" aria-pressed="false"><span>03</span><b>Run</b><small>Distance · time · pace</small></button>
+        </nav>
+
+        <section class="workout-quick-log" aria-labelledby="workout-quick-title">
+          <div><span id="workout-mode-glyph" aria-hidden="true">↗</span><div><p>QUICK ENTRY</p><h3 id="workout-quick-title">What did you lift?</h3><small id="workout-quick-help">Choose an exercise, enter the sets, and you’re done.</small></div></div>
+          <button id="workout-quick-button" type="button">Log a lift <span>↗</span></button>
+        </section>
+
+        <section class="workout-stats" aria-label="Workout at a glance">
+          <article><span class="workout-stat-icon orange">✦</span><div><small id="workout-stat-one-label">RECENT BEST</small><strong id="workout-stat-one">—</strong><p id="workout-stat-one-note">No lifts yet</p></div></article>
+          <article><span class="workout-stat-icon lavender">◎</span><div><small id="workout-stat-two-label">SESSIONS</small><strong id="workout-stat-two">0</strong><p id="workout-stat-two-note">Last 30 days</p></div></article>
+          <article><span class="workout-stat-icon peacock">◷</span><div><small id="workout-stat-three-label">LAST LOGGED</small><strong id="workout-stat-three">—</strong><p id="workout-stat-three-note">Ready when you are</p></div></article>
+          <article><span class="workout-stat-icon purple">↗</span><div><small id="workout-stat-four-label">PERSONAL BESTS</small><strong id="workout-stat-four">0</strong><p id="workout-stat-four-note">Across your exercises</p></div></article>
+        </section>
+
+        <section class="workout-progress-panel" aria-labelledby="workout-progress-title">
+          <header>
+            <div><p class="section-kicker">PROGRESSION, NOT PRESSURE</p><h3 id="workout-progress-title">Best weight over time</h3><small id="workout-progress-note">Each point is the heaviest set you recorded that day.</small></div>
+            <div class="workout-progress-controls">
+              <label id="workout-subject-wrap"><span>Show</span><select id="workout-subject"></select></label>
+              <label><span>Range</span><select id="workout-range"><option value="90">3 months</option><option value="180">6 months</option><option value="365" selected>1 year</option><option value="all">All time</option></select></label>
+            </div>
+          </header>
+          <div class="workout-chart-shell">
+            <div class="workout-chart-y" aria-hidden="true"><span id="workout-chart-high">—</span><span id="workout-chart-mid">—</span><span id="workout-chart-low">—</span></div>
+            <svg id="workout-chart" viewBox="0 0 760 260" role="img" aria-label="Workout progression chart"><g class="workout-grid-lines"></g><path class="workout-area"></path><path class="workout-line"></path><g class="workout-points"></g></svg>
+            <div id="workout-chart-empty" class="workout-chart-empty"><span>⌁</span><strong>Your line starts with one entry.</strong><p>Log an activity and the progression view will build itself.</p></div>
+          </div>
+          <footer><span id="workout-chart-start">Earlier</span><p id="workout-chart-summary">Nothing to compare yet.</p><span id="workout-chart-end">Now</span></footer>
+        </section>
+
+        <section class="workout-history" aria-labelledby="workout-history-title">
+          <div class="workout-history-heading"><div><p class="section-kicker">THE SESSIONS BEHIND THE LINE</p><h3 id="workout-history-title">Workout history</h3></div><button id="workout-log-another" type="button">＋ Add entry</button></div>
+          <div class="workout-filters">
+            <label class="workout-search"><span>Find in your workouts</span><input id="workout-search" type="search" placeholder="Search exercise, route, venue, or notes" /></label>
+            <label><span>Activity</span><select id="workout-type-filter"><option value="">Every activity</option><option value="lift">Lifts</option><option value="climb">Climbs</option><option value="run">Runs</option></select></label>
+            <label><span>From</span><input id="workout-date-from" type="date" /></label>
+            <label><span>To</span><input id="workout-date-to" type="date" /></label>
+          </div>
+          <div id="workout-results-label" class="workout-results-label">Loading your workouts…</div>
+          <div id="workout-event-list" class="workout-event-list"></div>
+          <div id="workout-history-empty" class="workout-history-empty" hidden><span>◎</span><h4>No entries in this view yet.</h4><p>A single set, climb, or run is enough to begin.</p><button type="button" class="workout-primary-button">Log the first one</button></div>
+        </section>
+        <p class="workout-disclaimer">This tracker records what you enter. It does not prescribe training, evaluate technique, or replace professional health or safety guidance.</p>
+      </section>
+
       <footer class="site-footer">
         <span>PERSONAL ECOSYSTEM</span>
         <p>Local software for a quieter inner life.</p>
@@ -273,6 +410,32 @@
           <p class="health-event-summary"></p>
           <div class="health-tag-list"></div>
           <details class="health-event-details"><summary>View full record <span>⌄</span></summary><div class="health-detail-grid"></div></details>
+        </div>
+      </article>
+    </template>
+    <template id="car-event-template">
+      <article class="car-event-card">
+        <div class="car-date-tile"><span></span><strong></strong><small></small></div>
+        <div class="car-event-content">
+          <div class="car-event-meta"><span class="car-category-pill"><i></i><b></b></span><span class="car-odometer"></span><span class="car-cost"></span></div>
+          <h4></h4>
+          <p class="car-provider"></p>
+          <p class="car-event-summary"></p>
+          <div class="car-reminder-chips"></div>
+          <details class="car-event-details"><summary>Everything recorded <span>⌄</span></summary><div class="car-detail-grid"></div></details>
+        </div>
+      </article>
+    </template>
+    <template id="workout-event-template">
+      <article class="workout-event-card">
+        <div class="workout-date-tile"><span></span><strong></strong><small></small></div>
+        <div class="workout-event-content">
+          <div class="workout-event-meta"><span class="workout-type-pill"><i></i><b></b></span><time></time><span class="workout-event-primary"></span></div>
+          <h4></h4>
+          <p class="workout-event-secondary"></p>
+          <p class="workout-event-summary"></p>
+          <div class="workout-event-chips"></div>
+          <details class="workout-event-details"><summary>Everything recorded <span>⌄</span></summary><div class="workout-detail-grid"></div></details>
         </div>
       </article>
     </template>
@@ -334,7 +497,183 @@
         <footer><span><i></i>Stored as private Markdown in your approved folder</span><div><button id="cancel-health-entry" type="button">Cancel</button><button id="save-health-entry" type="submit">Add to journal</button></div></footer>
       </form>
     </dialog>
-    <script src="/app.js" type="module"></script>
-    <script src="/health.js" type="module"></script>
+    <dialog id="vehicle-dialog" class="car-dialog compact" aria-labelledby="vehicle-dialog-title">
+      <form id="vehicle-form">
+        <header><div><p>MY GARAGE</p><h2 id="vehicle-dialog-title">Add a vehicle</h2><small>A nickname is all that’s required. VIN and license plate stay out of this app.</small></div><button id="close-vehicle-dialog" type="button" aria-label="Close vehicle form">×</button></header>
+        <div class="car-form-body">
+          <label class="car-form-field"><span>What do you call it? <b>*</b></span><input name="displayName" maxlength="100" required placeholder="e.g. Blue Subaru" /></label>
+          <div class="car-form-grid three">
+            <label><span>Year</span><input name="year" type="number" min="1886" max="2200" inputmode="numeric" placeholder="2019" /></label>
+            <label><span>Make</span><input name="make" maxlength="80" placeholder="Subaru" /></label>
+            <label><span>Model</span><input name="model" maxlength="100" placeholder="Outback" /></label>
+          </div>
+          <div class="car-form-grid two">
+            <label><span>Distance</span><select name="distanceUnit"><option value="mi">Miles</option><option value="km">Kilometers</option></select></label>
+            <label><span>Currency</span><select name="currency"><option value="USD">USD</option><option value="CAD">CAD</option><option value="EUR">EUR</option><option value="GBP">GBP</option><option value="INR">INR</option><option value="AUD">AUD</option></select></label>
+          </div>
+          <label class="car-form-field"><span>Owner’s manual link <small>optional</small></span><input name="ownerManualUrl" type="url" placeholder="https://" /></label>
+          <label class="car-form-field"><span>Anything useful to remember</span><textarea name="notes" rows="3" placeholder="Trim, tire size, where the spare key lives…"></textarea></label>
+          <p id="vehicle-form-status" class="car-form-status" role="status" aria-live="polite"></p>
+        </div>
+        <footer><span><i></i>Saved as private, append-only Markdown</span><div><button id="cancel-vehicle" type="button">Cancel</button><button id="save-vehicle" type="submit">Add to garage</button></div></footer>
+      </form>
+    </dialog>
+    <dialog id="car-dialog" class="car-dialog" aria-labelledby="car-dialog-title">
+      <form id="car-form">
+        <header><div><p>PRIVATE MAINTENANCE LOG</p><h2 id="car-dialog-title">Log maintenance</h2><small>Record what happened. Set the next reminder only when you know it.</small></div><button id="close-car-dialog" type="button" aria-label="Close maintenance form">×</button></header>
+        <div class="car-form-body">
+          <fieldset class="car-category-fieldset"><legend>What kind of work was it?</legend><div id="car-category-chips" class="car-category-chips"></div></fieldset>
+          <div class="car-form-grid two">
+            <label><span>Vehicle <b>*</b></span><select id="car-form-vehicle" name="vehicleId" required></select></label>
+            <label><span>Service date <b>*</b></span><input name="serviceDate" type="date" required /></label>
+          </div>
+          <label class="car-form-field"><span>Short title <b>*</b></span><input name="title" maxlength="160" required /></label>
+          <div class="car-form-grid three">
+            <label><span>Odometer</span><input name="odometer" type="number" min="0" step="1" inputmode="numeric" /></label>
+            <label><span>Done by</span><select id="car-service-type" name="serviceType"><option value="">Not specified</option></select></label>
+            <label><span>Shop / provider</span><input name="provider" maxlength="160" placeholder="Optional" /></label>
+          </div>
+          <label class="car-form-field"><span>What happened?</span><textarea name="notes" rows="4" placeholder="Work performed, advice, noises, what changed…"></textarea></label>
+          <section id="car-guided-section" class="car-guided-section"><div><h3>Details for this service</h3><p>Use only what you’ll want later.</p></div><div id="car-guided-fields" class="car-form-grid two"></div></section>
+          <details class="car-more-details">
+            <summary><span>Costs, next due, warranty & receipt</span><small>Optional</small></summary>
+            <div class="car-form-grid three">
+              <label><span>Total cost</span><input name="cost" type="number" min="0" step="0.01" inputmode="decimal" /></label>
+              <label><span>Parts</span><input name="partsCost" type="number" min="0" step="0.01" inputmode="decimal" /></label>
+              <label><span>Labor</span><input name="laborCost" type="number" min="0" step="0.01" inputmode="decimal" /></label>
+            </div>
+            <div class="car-form-section-label"><span>REMIND ME NEXT TIME</span><small>Use your manual or manufacturer schedule</small></div>
+            <div class="car-form-grid two">
+              <label><span>Next due date</span><input name="nextDueDate" type="date" /></label>
+              <label><span>Next due odometer</span><input name="nextDueOdometer" type="number" min="0" step="1" inputmode="numeric" /></label>
+            </div>
+            <div class="car-form-section-label"><span>WARRANTY / PAPER TRAIL</span></div>
+            <div class="car-form-grid two">
+              <label><span>Warranty until</span><input name="warrantyUntilDate" type="date" /></label>
+              <label><span>Warranty odometer</span><input name="warrantyUntilOdometer" type="number" min="0" step="1" inputmode="numeric" /></label>
+            </div>
+            <label class="car-form-field"><span>Receipt or work-order reference</span><input name="receiptReference" maxlength="500" placeholder="Filename, order number, or private link" /></label>
+          </details>
+          <p id="car-form-status" class="car-form-status" role="status" aria-live="polite"></p>
+        </div>
+        <footer><span><i></i>Stored as a private Markdown record</span><div><button id="cancel-car-entry" type="button">Cancel</button><button id="save-car-entry" type="submit">Add to history</button></div></footer>
+      </form>
+    </dialog>
+    <dialog id="workout-dialog" class="workout-dialog" aria-labelledby="workout-dialog-title">
+      <form id="workout-form">
+        <header><div><p>PRIVATE WORKOUT LOG</p><h2 id="workout-dialog-title">Log a lift</h2><small id="workout-dialog-subtitle">Previous values stay close; everything else stays out of the way.</small></div><button id="close-workout-dialog" type="button" aria-label="Close workout form">×</button></header>
+        <div class="workout-form-body">
+          <fieldset class="workout-type-fieldset"><legend>What did you do?</legend><div class="workout-type-chips"><button type="button" class="selected" data-workout-entry-type="lift"><span>↗</span>Lift</button><button type="button" data-workout-entry-type="climb"><span>◇</span>Climb</button><button type="button" data-workout-entry-type="run"><span>≈</span>Run</button></div></fieldset>
+          <div class="workout-form-grid two">
+            <label><span>Date <b>*</b></span><input name="activityDate" type="date" required /></label>
+            <label><span>Time <small>optional</small></span><input name="activityTime" type="time" /></label>
+          </div>
+
+          <section id="workout-lift-fields" class="workout-adaptive-fields">
+            <div class="workout-form-grid lift-head">
+              <label><span>Exercise <b>*</b></span><select id="workout-exercise" name="exerciseId"></select></label>
+              <label><span>Weight unit</span><select name="weightUnit"><option value="lb">Pounds</option><option value="kg">Kilograms</option></select></label>
+            </div>
+            <label id="workout-custom-exercise-wrap" class="workout-form-field" hidden><span>Exercise name <b>*</b></span><input name="exerciseName" maxlength="120" placeholder="Name this movement" /></label>
+            <div id="workout-previous" class="workout-previous" hidden><span>LAST TIME</span><p></p><button type="button">Use these sets</button></div>
+            <section class="workout-sets-section" aria-labelledby="workout-sets-title">
+              <div class="workout-sets-heading"><div><h3 id="workout-sets-title">Sets</h3><p>Weight is optional for bodyweight movements.</p></div><span id="workout-volume-preview">0 total reps</span></div>
+              <div class="workout-set-labels"><span>SET</span><span>REPS</span><span>WEIGHT</span><span>RPE</span><span></span></div>
+              <div id="workout-set-rows"></div>
+              <button id="workout-add-set" type="button">＋ Add another set</button>
+            </section>
+          </section>
+
+          <section id="workout-climb-fields" class="workout-adaptive-fields" hidden>
+            <div class="workout-form-grid two">
+              <label><span>Climb style <b>*</b></span><select name="climbStyle"><option value="boulder">Boulder</option><option value="top-rope">Top rope</option><option value="lead">Lead</option><option value="sport">Sport</option><option value="trad">Trad</option><option value="board">Training board</option></select></label>
+              <label><span>Grade system <b>*</b></span><select id="workout-grade-system" name="gradeSystem"></select></label>
+            </div>
+            <div class="workout-form-grid two">
+              <label id="workout-grade-select-wrap"><span>Grade <b>*</b></span><select id="workout-grade" name="grade"></select></label>
+              <label id="workout-custom-grade-wrap" hidden><span>Gym color / grade <b>*</b></span><input id="workout-custom-grade" maxlength="30" placeholder="e.g. Purple" /></label>
+              <label><span>Attempts</span><input name="attempts" type="number" min="1" max="10000" value="1" inputmode="numeric" /></label>
+            </div>
+            <fieldset class="workout-outcome-fieldset"><legend>Outcome</legend><div id="workout-outcomes" class="workout-outcome-chips"><button type="button" data-climb-outcome="flash">Flash</button><button type="button" class="selected" data-climb-outcome="send">Send</button><button type="button" data-climb-outcome="attempt">Attempt</button><button type="button" data-climb-outcome="project">Project</button></div></fieldset>
+            <div class="workout-form-grid two">
+              <label><span>Gym / crag</span><input name="venue" maxlength="160" placeholder="Optional" /></label>
+              <label><span>Route / problem</span><input name="routeName" maxlength="160" placeholder="Optional" /></label>
+            </div>
+            <label class="workout-form-field"><span>Wall angle / style</span><input name="wallAngle" maxlength="60" placeholder="e.g. slab, 30° overhang, crimpy" /></label>
+          </section>
+
+          <section id="workout-run-fields" class="workout-adaptive-fields" hidden>
+            <div class="workout-form-grid run-head">
+              <label><span>Distance <b>*</b></span><input name="distance" type="number" min="0.01" step="0.01" inputmode="decimal" placeholder="3.10" /></label>
+              <label><span>Unit</span><select name="distanceUnit"><option value="mi">Miles</option><option value="km">Kilometers</option></select></label>
+              <label><span>Duration <b>*</b></span><input name="runDuration" inputmode="numeric" placeholder="32:18" /></label>
+            </div>
+            <p id="workout-pace-preview" class="workout-pace-preview">Enter distance and time to see pace.</p>
+            <div class="workout-form-grid three">
+              <label><span>Run type</span><select id="workout-run-type" name="runType"></select></label>
+              <label><span>Elevation gain</span><input name="elevationGain" type="number" min="0" step="1" inputmode="decimal" /></label>
+              <label><span>Elevation unit</span><select name="elevationUnit"><option value="ft">Feet</option><option value="m">Meters</option></select></label>
+            </div>
+            <label class="workout-form-field"><span>Perceived effort <small>optional · 1–10</small></span><input name="perceivedEffort" type="number" min="1" max="10" step="0.5" inputmode="decimal" /></label>
+          </section>
+
+          <details class="workout-more-details"><summary><span>Title & notes</span><small>Optional</small></summary><label class="workout-form-field"><span>Short title</span><input name="title" maxlength="160" placeholder="Automatically named if blank" /></label><label class="workout-form-field"><span>Notes</span><textarea name="notes" rows="4" placeholder="What felt good, what changed, what to remember next time…"></textarea></label></details>
+          <p id="workout-form-status" class="workout-form-status" role="status" aria-live="polite"></p>
+        </div>
+        <footer><span><i></i>Stored as a private, append-only Markdown record</span><div><button id="cancel-workout-entry" type="button">Cancel</button><button id="save-workout-entry" type="submit">Add to history</button></div></footer>
+      </form>
+    </dialog>
+    <button id="voice-launcher" class="voice-launcher" type="button" aria-label="Open private voice capture">
+      <span class="voice-launcher-mark" aria-hidden="true"><i></i><i></i><i></i><i></i></span>
+      <b>Speak</b>
+    </button>
+    <dialog id="voice-dialog" class="voice-dialog" aria-labelledby="voice-dialog-title">
+      <section class="voice-sheet">
+        <header class="voice-header">
+          <div><p>PRIVATE VOICE INBOX</p><h2 id="voice-dialog-title">Say it before it disappears.</h2><small>Your recording goes only to the local transcription service configured on this machine.</small></div>
+          <button id="close-voice-dialog" type="button" aria-label="Close voice capture">×</button>
+        </header>
+
+        <div id="voice-capture-step" class="voice-capture-step">
+          <div class="voice-orb-wrap">
+            <button id="voice-record-button" class="voice-orb" type="button" aria-label="Start recording">
+              <span class="voice-orb-bars" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></span>
+              <strong id="voice-record-label">Tap to talk</strong>
+              <small id="voice-timer">up to 2 minutes</small>
+            </button>
+            <span class="voice-orbit one" aria-hidden="true"></span><span class="voice-orbit two" aria-hidden="true"></span>
+          </div>
+          <div id="voice-engine-state" class="voice-engine-state checking"><i></i><div><strong>Checking local transcription…</strong><span>Nothing records until you tap.</span></div></div>
+          <p id="voice-status" class="voice-status" role="status" aria-live="polite"></p>
+          <details id="voice-text-fallback" class="voice-text-fallback">
+            <summary><span>Type or paste a transcript instead</span><small>Useful for testing the router</small></summary>
+            <label for="voice-manual-transcript">What would you have said?</label>
+            <textarea id="voice-manual-transcript" rows="5" maxlength="20000" placeholder="I got an oil change today at 66,200 miles…"></textarea>
+            <button id="route-manual-transcript" type="button">Find where this belongs <span>↗</span></button>
+          </details>
+          <p class="voice-boundary"><span>✦</span> Audio is temporary. Nothing is filed until you review it.</p>
+        </div>
+
+        <div id="voice-review-step" class="voice-review-step" hidden>
+          <div class="voice-review-heading"><div><p>HEARD & READY TO REVIEW</p><h3>Does this look right?</h3></div><span id="voice-confidence">Likely match</span></div>
+          <label class="voice-transcript-field" for="voice-transcript"><span>Transcript</span><textarea id="voice-transcript" rows="7" maxlength="20000"></textarea></label>
+          <fieldset class="voice-destination-fieldset"><legend>Where should this go?</legend><div class="voice-destinations">
+            <button type="button" data-voice-destination="capture"><i>✦</i><span><strong>Capture</strong><small>Thoughts & tasks</small></span></button>
+            <button type="button" data-voice-destination="health"><i>＋</i><span><strong>Health</strong><small>Care & symptoms</small></span></button>
+            <button type="button" data-voice-destination="car"><i>◒</i><span><strong>Car</strong><small>Service & issues</small></span></button>
+            <button type="button" data-voice-destination="workout"><i>↗</i><span><strong>Workout</strong><small>Lifts, climbs & runs</small></span></button>
+          </div></fieldset>
+          <div class="voice-proposal"><span id="voice-proposal-mark">↗</span><div><strong id="voice-proposal-title">Suggested home</strong><p id="voice-proposal-reason"></p></div></div>
+          <div id="voice-extracted-fields" class="voice-extracted-fields" aria-label="Details found in transcript"></div>
+          <p id="voice-review-status" class="voice-status" role="status" aria-live="polite"></p>
+          <footer><button id="voice-start-over" type="button">← Start over</button><button id="voice-continue" type="button">Continue in Capture <span>↗</span></button></footer>
+        </div>
+      </section>
+    </dialog>
+    <script src="/app.js?v=2" type="module"></script>
+    <script src="/health.js?v=2" type="module"></script>
+    <script src="/car.js?v=2" type="module"></script>
+    <script src="/workout.js?v=2" type="module"></script>
+    <script src="/voice.js?v=1" type="module"></script>
   </body>
 </html>

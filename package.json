@@ -34,7 +34,7 @@
     "dev": "node src/cli/main.ts serve",
     "start": "node src/cli/main.ts serve",
     "test": "node --test tests/*.test.ts",
-    "check": "node --check web/app.js && node --check web/health.js && node --test tests/*.test.ts"
+    "check": "node --check web/app.js && node --check web/health.js && node --check web/car.js && node --check web/workout.js && node --check web/voice.js && node --test tests/*.test.ts"
   },
   "keywords": [
     "markdown",
@@ -43,6 +43,8 @@
     "local-first",
     "self-hosted",
     "pwa",
-    "health-journal"
+    "health-journal",
+    "voice-notes",
+    "workout-tracker"
   ]
 }

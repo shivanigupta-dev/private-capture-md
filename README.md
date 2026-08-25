@@ -4,11 +4,11 @@
 [![MIT License](https://img.shields.io/badge/license-MIT-f7813f.svg)](LICENSE)
 [![Local first](https://img.shields.io/badge/storage-local--first-30b8b2.svg)](PRIVACY.md)
 
-Private Capture is a mobile-friendly way to add notes to Obsidian without using the Obsidian interface. It saves thoughts and health updates directly as plain Markdown.
+Private Capture is a mobile-friendly way to add notes to Obsidian without using the Obsidian interface. It saves thoughts, health updates, vehicle maintenance, and workout history directly as plain Markdown.
 
 Each entry is saved as an ordinary `.md` file inside a folder you explicitly approve. Keep it in Obsidian, sync it with tools you already use, open it in any text editor, or leave it entirely on one device—the files stay yours either way.
 
-No account. No database. No analytics. No AI features or external model calls. The default setup stays on your computer.
+No account. No database. No analytics. No hosted AI or external model calls by default. Optional voice transcription runs only through a local speech engine you configure.
 
 ![Private Capture writing interface](docs/assets/capture-empty-state.jpg)
 
@@ -18,6 +18,9 @@ No account. No database. No analytics. No AI features or external model calls. T
 
 - A focused capture screen with lightweight Markdown formatting and preview
 - A private Health Journal for visits, symptoms, therapy, preventive care, and follow-up dates
+- A multi-vehicle maintenance log for service history, mileage, costs, and next-due reminders
+- A workout tracker for lifts, climbs, and runs, with quick logging and local progression views
+- A private voice inbox that transcribes locally, proposes where a note belongs, and waits for your review before saving
 - A private inbox made of plain files you own
 - A review view that records suggestions separately and never rewrites a capture
 - A local desktop tool by default
@@ -27,6 +30,12 @@ No account. No database. No analytics. No AI features or external model calls. T
 Private Capture is not a full vault editor, a sync engine, or an Obsidian plugin. It deliberately writes only inside the folder you approve.
 
 The Health Journal is a personal organizational record—not a medical device, patient portal, diagnostic tool, or emergency record. Read [Health data and safety](docs/health-data.md) before using it for sensitive information.
+
+The vehicle log is a personal record, not a diagnostic or manufacturer maintenance schedule. It does not collect VINs or license plates. Read [Vehicle data and maintenance guidance](docs/vehicle-data.md) before relying on its reminders.
+
+The workout tracker records completed activity; it does not prescribe training or evaluate technique. Read [Workout data and safety](docs/workout-data.md) before relying on it for health or safety decisions.
+
+Voice capture is an optional layer over the same forms. The browser records a short clip, the Linux host sends it to a loopback-only speech engine, and Private Capture returns an editable routing proposal. It never silently saves or classifies a recording. See [Local voice capture](docs/voice.md) for the recommended `whisper.cpp` setup and alternatives.
 
 ![Private Health Journal empty state](docs/assets/health-empty-state.jpg)
 
@@ -74,14 +83,21 @@ Private Capture/
     ├── Captures/
     │   ├── 2026-07-21--a-thought--4dd4a1f2.md
     │   ├── 2026-07-21--health--therapy-session--r1--….md
-    │   └── 2026-07-21--health--therapy-session--r2--….md
+    │   ├── 2026-07-21--health--therapy-session--r2--….md
+    │   ├── 2026-07-21--vehicle--blue-subaru--….md
+    │   ├── 2026-07-21--car--oil-and-filter-change--….md
+    │   └── 2026-07-21--workout--barbell-back-squat--….md
     └── _review/
         └── cap_…--2026-07-21T18-42-03-000Z--….json
 ```
 
-Captures and Health Journal entries are append-only. Editing a health entry creates a new Markdown revision, and the timeline shows the latest revision while preserving the earlier file. Review proposals are separate append-only JSON sidecars. Removing or changing the approval marker pauses all reads and writes.
+Captures, vehicle profiles, maintenance records, workout entries, and Health Journal entries are append-only. Editing a health entry creates a new Markdown revision, and the timeline shows the latest revision while preserving the earlier file. Review proposals are separate append-only JSON sidecars. Removing or changing the approval marker pauses all reads and writes.
 
 The Health Journal includes 17 built-in, centrally defined categories plus custom categories. Its guided fields adapt to the selected entry type; optional measurements stay optional. Search and filters run inside the browser, so private search text is not sent in URLs or server logs. The journal records what you enter and does not diagnose conditions or provide medical advice.
+
+The Car tab supports multiple vehicles and eight quick presets. Reminders come only from next-due dates or odometer readings you enter; the app does not invent universal maintenance intervals. Vehicle search and filters also stay inside the browser.
+
+The Workout tab adapts one quick-entry sheet to lifts, climbs, and runs. It keeps previous lift sets close, records climb grade/outcome/attempts, derives run pace from distance and duration, and draws progression charts in the browser. Workout search and filters never enter URLs or server logs.
 
 ## Sync
 
@@ -90,6 +106,7 @@ Private Capture does not invent a second sync system. Point it at a locally avai
 - [Google Drive, Dropbox, OneDrive, iCloud, and Syncthing](docs/sync.md)
 - [Obsidian CLI and Obsidian Headless](docs/obsidian.md)
 - [Optional Linux + VPN deployment](docs/self-hosting.md)
+- [Optional local voice transcription](docs/voice.md)
 - [What the app stores and does not collect](PRIVACY.md)
 
 Sync is not a backup. Keep versioned backups separately.
@@ -103,6 +120,7 @@ Sync is not a backup. Keep versioned backups separately.
 5. Personal data does not enter logs, telemetry, screenshots, or fixtures.
 6. A useful offline path is better than a fragile cloud dependency.
 7. Health records remain private, user-owned notes rather than medical advice.
+8. Voice routing is always a reviewable proposal, never an automatic write.
 
 See [Architecture](docs/architecture.md) and [Threat model](docs/threat-model.md) for the less friendly details.
 

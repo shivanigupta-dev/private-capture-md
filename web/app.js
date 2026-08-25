@@ -64,8 +64,28 @@ function showView(name) {
   window.history.replaceState(null, "", `#${name}`);
   if (name === "review") loadCaptures().catch(showPageError);
   else if (name === "health") window.healthJournal?.activate();
+  else if (name === "car") window.carMaintenance?.activate();
+  else if (name === "workout") window.workoutTracker?.activate();
   else textArea.focus();
 }
+
+function openVoiceDraft(proposal) {
+  const transcript = String(proposal?.transcript || "").trim();
+  if (!transcript) return { ok: false, message: "The voice transcript is empty." };
+  showView("capture");
+  textArea.value = textArea.value.trim() ? `${textArea.value.trimEnd()}\n\n${transcript}` : transcript;
+  const captureType = ["thought", "journal", "project-update", "decision", "question", "link", "task"].includes(proposal?.subtype) ? proposal.subtype : proposal?.fields?.captureType || "thought";
+  form.elements.captureType.value = captureType;
+  if (!form.elements.title.value.trim() && typeof proposal?.fields?.title === "string") form.elements.title.value = proposal.fields.title;
+  setEditorMode("write");
+  updateWritingStats();
+  renderMarkdownPreview();
+  scheduleDraft();
+  textArea.focus();
+  return { ok: true };
+}
+
+window.privateCapture = { showView, openVoiceDraft };
 
 document.querySelectorAll(".nav-button").forEach((button) => button.addEventListener("click", () => showView(button.dataset.view)));
 
@@ -511,7 +531,7 @@ try {
 async function boot() {
   if (await refreshHealth()) {
     await refreshCount();
-    if (["#review", "#health"].includes(window.location.hash)) showView(window.location.hash.slice(1));
+    if (["#review", "#health", "#car", "#workout"].includes(window.location.hash)) showView(window.location.hash.slice(1));
   }
 }
 

@@ -9,6 +9,10 @@ import { listApprovedFiles, loadApprovedRoot, readApprovedText } from "../src/co
 import { CaptureStore, RecordConflictError } from "../src/core/store.ts";
 import { HealthStore } from "../src/core/health-store.ts";
 import { HEALTH_CATEGORIES, parseHealthEvent, renderHealthEvent } from "../src/core/health.ts";
+import { CarStore } from "../src/core/car-store.ts";
+import { CAR_PRESETS, parseVehicleEvent, parseVehicleProfile, renderVehicleEvent, renderVehicleProfile } from "../src/core/car.ts";
+import { WorkoutStore } from "../src/core/workout-store.ts";
+import { CLIMB_GRADE_SYSTEMS, EXERCISES, parseWorkout, renderWorkout } from "../src/core/workout.ts";
 
 const createdAt = "2026-07-21T18:42:03.000Z";
 const idempotencyKey = "4dd4a1f2-9cf3-44cb-a473-3c083b78cf8a";
@@ -209,4 +213,160 @@ test("related health entries preserve referential integrity", async (t) => {
     relatedEventId: "health_d355577a-13b5-43fa-8e60-e6c96de4c3ce",
     clientCreatedAt: createdAt,
   }, "effc7ef8-17e4-4221-9ee5-c6ab2e044369"), /related health entry/i);
+});
+
+test("vehicle profiles and maintenance records are append-only, private Markdown", async (t) => {
+  const { root } = await fixture(t);
+  const carStore = new CarStore(root);
+  const vehicleInput = {
+    displayName: "Synthetic Blue Car",
+    year: 2021,
+    make: "Example",
+    model: "Roadster",
+    distanceUnit: "mi" as const,
+    currency: "USD",
+    ownerManualUrl: "https://example.com/manual.pdf",
+    notes: "Temporary synthetic vehicle used by the test suite.",
+    clientCreatedAt: createdAt,
+  };
+  const vehicle = await carStore.saveVehicle(vehicleInput, idempotencyKey);
+  const vehicleReplay = await carStore.saveVehicle(vehicleInput, idempotencyKey);
+  assert.equal(vehicle.created, true);
+  assert.equal(vehicleReplay.created, false);
+  const vehicleMarkdown = await readApprovedText(root, vehicle.receipt.relative_path);
+  assert.ok(vehicleMarkdown);
+  assert.deepEqual(parseVehicleProfile(renderVehicleProfile(vehicle.record)), vehicle.record);
+
+  const eventKey = "d355577a-13b5-43fa-8e60-e6c96de4c3ce";
+  const eventInput = {
+    vehicleId: vehicle.record.id,
+    serviceDate: "2026-07-20",
+    category: "oil-filter",
+    title: "Synthetic oil service",
+    odometer: 42_100,
+    provider: "Synthetic Shop",
+    serviceType: "shop",
+    cost: 84.32,
+    partsCost: 42.11,
+    laborCost: 42.21,
+    nextDueDate: "2027-01-20",
+    nextDueOdometer: 47_100,
+    warrantyUntilDate: "2027-07-20",
+    receiptReference: "synthetic-receipt.pdf",
+    notes: "Synthetic maintenance note.",
+    details: { oil_viscosity: "0W-20", oil_type: "Full synthetic", oil_filter: "TEST-123" },
+    clientCreatedAt: createdAt,
+  };
+  const event = await carStore.saveEvent(eventInput, eventKey);
+  const eventReplay = await carStore.saveEvent(eventInput, eventKey);
+  assert.equal(event.created, true);
+  assert.equal(eventReplay.created, false);
+  const eventMarkdown = await readApprovedText(root, event.receipt.relative_path);
+  assert.ok(eventMarkdown);
+  assert.deepEqual(parseVehicleEvent(renderVehicleEvent(event.record)), event.record);
+  assert.equal((await carStore.vehicles()).length, 1);
+  assert.equal((await carStore.events()).length, 1);
+  assert.equal(await readApprovedText(root, vehicle.receipt.relative_path), vehicleMarkdown);
+  assert.equal((await listApprovedFiles(root, "Inbox/Captures", ".md")).length, 2);
+});
+
+test("car presets guide details without inventing universal service intervals", async (t) => {
+  assert.equal(CAR_PRESETS.length, 8);
+  assert.equal(new Set(CAR_PRESETS.map((preset) => preset.slug)).size, CAR_PRESETS.length);
+  assert.ok(CAR_PRESETS.find((preset) => preset.slug === "tires")?.fields.some((field) => field.key === "tread_notes"));
+  assert.doesNotMatch(JSON.stringify(CAR_PRESETS), /interval|every\s+\d/i);
+  const { root } = await fixture(t);
+  const carStore = new CarStore(root);
+  await assert.rejects(() => carStore.saveEvent({
+    vehicleId: "vehicle_4dd4a1f2-9cf3-44cb-a473-3c083b78cf8a",
+    serviceDate: "2026-07-20",
+    category: "brakes",
+    title: "Orphaned maintenance",
+    clientCreatedAt: createdAt,
+  }, "e2199524-e678-4857-8c2e-a22f4ab7d454"), /vehicle is no longer available/i);
+});
+
+test("lift, climb, and run entries remain append-only Markdown", async (t) => {
+  const { root } = await fixture(t);
+  const workoutStore = new WorkoutStore(root);
+  const liftInput = {
+    activityDate: "2026-07-20",
+    activityTime: "18:30",
+    activityType: "lift" as const,
+    exerciseId: "barbell-back-squat",
+    weightUnit: "lb" as const,
+    sets: [
+      { reps: 5, weight: 95, rpe: 7 },
+      { reps: 5, weight: 100, rpe: 8 },
+      { reps: 3, weight: 105, rpe: 8.5 },
+    ],
+    notes: "Synthetic lift used by the test suite.",
+    clientCreatedAt: createdAt,
+  };
+  const lift = await workoutStore.save(liftInput, idempotencyKey);
+  const liftReplay = await workoutStore.save(liftInput, idempotencyKey);
+  assert.equal(lift.created, true);
+  assert.equal(liftReplay.created, false);
+  const liftMarkdown = await readApprovedText(root, lift.receipt.relative_path);
+  assert.ok(liftMarkdown);
+  assert.deepEqual(parseWorkout(renderWorkout(lift.record)), lift.record);
+
+  const climb = await workoutStore.save({
+    activityDate: "2026-07-21",
+    activityType: "climb",
+    climbStyle: "boulder",
+    gradeSystem: "v-scale",
+    grade: "V4",
+    climbOutcome: "send",
+    attempts: 3,
+    venue: "Synthetic Gym",
+    routeName: "Purple test problem",
+    notes: "Synthetic climb.",
+    clientCreatedAt: "2026-07-21T19:00:00.000Z",
+  }, "d355577a-13b5-43fa-8e60-e6c96de4c3ce");
+  assert.equal(climb.record.grade_rank, CLIMB_GRADE_SYSTEMS.find((system) => system.slug === "v-scale")?.grades.indexOf("V4"));
+
+  const run = await workoutStore.save({
+    activityDate: "2026-07-22",
+    activityType: "run",
+    distance: 3.1,
+    distanceUnit: "mi",
+    durationSeconds: 1_842,
+    runType: "easy",
+    elevationGain: 118,
+    elevationUnit: "ft",
+    perceivedEffort: 5,
+    notes: "Synthetic run.",
+    clientCreatedAt: "2026-07-22T13:00:00.000Z",
+  }, "e2199524-e678-4857-8c2e-a22f4ab7d454");
+  assert.equal(run.record.duration_seconds, 1_842);
+  assert.equal((await workoutStore.list()).length, 3);
+  assert.equal(await readApprovedText(root, lift.receipt.relative_path), liftMarkdown);
+  assert.equal((await listApprovedFiles(root, "Inbox/Captures", ".md")).length, 3);
+});
+
+test("workout metadata has stable exercise and grade identities", async (t) => {
+  assert.ok(EXERCISES.length >= 25);
+  assert.equal(new Set(EXERCISES.map((exercise) => exercise.id)).size, EXERCISES.length);
+  assert.ok(CLIMB_GRADE_SYSTEMS.find((system) => system.slug === "v-scale")?.grades.includes("V10"));
+  assert.ok(CLIMB_GRADE_SYSTEMS.find((system) => system.slug === "yds")?.grades.includes("5.12a"));
+  const { root } = await fixture(t);
+  const workoutStore = new WorkoutStore(root);
+  await assert.rejects(() => workoutStore.save({
+    activityDate: "2026-07-20",
+    activityType: "climb",
+    climbStyle: "boulder",
+    gradeSystem: "v-scale",
+    grade: "Impossible grade",
+    climbOutcome: "send",
+    attempts: 1,
+    clientCreatedAt: createdAt,
+  }, idempotencyKey), /grade from the selected system/i);
+  await assert.rejects(() => workoutStore.save({
+    activityDate: "2026-07-20",
+    activityType: "lift",
+    exerciseId: "barbell-back-squat",
+    sets: [],
+    clientCreatedAt: createdAt,
+  }, "d355577a-13b5-43fa-8e60-e6c96de4c3ce"), /at least one set/i);
 });

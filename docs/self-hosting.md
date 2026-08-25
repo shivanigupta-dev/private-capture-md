@@ -6,6 +6,7 @@ The recommended shape is:
 
 ```text
 phone → private VPN → HTTPS reverse proxy → Private Capture on localhost → local vault
+                                                     └→ optional speech engine on loopback
 ```
 
 Do not expose the Node process directly to the public internet.
@@ -20,6 +21,8 @@ You need:
 - a working private VPN such as OpenVPN or WireGuard;
 - an HTTPS reverse proxy such as Caddy or nginx;
 - full-disk encryption and a tested backup.
+
+Voice capture additionally needs a local speech engine. [`whisper.cpp`](voice.md) is the recommended starting point, but it is optional and runs beside Private Capture rather than inside it.
 
 ## Create a dedicated account
 
@@ -44,6 +47,8 @@ Start Private Capture on `127.0.0.1:3217`. The example [systemd unit](../deploy/
 
 The [Caddy example](../deploy/caddy/Caddyfile) uses Caddy's private certificate authority. Your phone must trust that CA, and the chosen hostname must resolve only inside the VPN. A publicly trusted certificate on a private hostname is another option if you control DNS.
 
+The VPN keeps the service private, but it does not make an HTTP page a secure browser context. iPhone and desktop browsers require trusted HTTPS before they expose the microphone API. Localhost is the development exception.
+
 Forward the original `Host` and protocol headers. The app uses them for same-origin checks and marks its session cookie Secure when the public request is HTTPS.
 
 ## Firewall
@@ -51,6 +56,7 @@ Forward the original `Host` and protocol headers. The app uses them for same-ori
 - Allow the VPN port from the internet if this machine is the VPN endpoint.
 - Allow HTTPS to the reverse proxy only from the VPN interface/subnet.
 - Do not allow port `3217` from the LAN, VPN, or WAN; it belongs on loopback.
+- If voice is enabled, keep the speech engine's port on loopback too. Only Private Capture should reach it.
 - Test from cellular data with the VPN disconnected: the capture site should be unreachable.
 - Connect the VPN and test again: the site should load over HTTPS and request the access token.
 

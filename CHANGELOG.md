@@ -6,6 +6,12 @@ All notable changes will be documented here. The format follows [Keep a Changelo
 
 ### Added
 
+- Optional voice inbox with local transcription, editable destination proposals, and reviewed handoff to Capture, Health, Car, or Workout
+- Loopback-only, provider-neutral speech endpoint with recording size, duration, and MIME limits
+- Workout tab for lifts, climbs, and runs, with previous-set recall, climbing outcomes, automatic pace, local history filters, and progression charts
+- Append-only workout Markdown records with idempotent writes and strict activity-specific validation
+- Multi-vehicle Car tab with maintenance history, quick presets, cost and odometer tracking, owner-defined reminders, and client-side filters
+- Append-only vehicle profiles and maintenance records with idempotent writes and vehicle referential-integrity checks
 - Private Health Journal with chronological and upcoming timelines, 17 built-in categories, adaptive fields, client-side filters, and custom categories
 - Append-only health-event revisions, idempotent writes, conflict detection, and focused therapy, symptom, dental, and preventive-care capture flows
 - Local-only initialization, health check, and capture server commands

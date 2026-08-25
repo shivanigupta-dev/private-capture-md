@@ -13,6 +13,7 @@ The roadmap is ordered by trust, not novelty.
 - Publish an OpenAPI document for `/api/v1`
 - Add synthetic screenshots and a short screen recording
 - Complete an outside security review of the file and network boundaries
+- Benchmark supported local speech engines on modest Linux CPU hardware with a synthetic English clip set
 
 ## After 0.1.0
 
@@ -25,7 +26,7 @@ The roadmap is ordered by trust, not novelty.
 ## Deliberately not planned for the first release
 
 - Full-vault editing or sync
-- AI classification or automatic rewriting
+- AI classification, automatic rewriting, or voice routing that saves without review
 - A general-purpose daily journal or full-vault editor
 - Multi-user hosting
 - Dashboards and productivity scoring

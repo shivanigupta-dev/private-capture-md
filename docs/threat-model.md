@@ -4,7 +4,8 @@ This document says what Private Capture tries to protect, what it assumes, and w
 
 ## Assets
 
-- The words in captures, Health Journal entries, and review proposals
+- The words in captures, Health Journal entries, vehicle and workout records, and review proposals
+- Voice recordings and transcripts while they are in memory or being processed locally
 - The integrity of the rest of the vault
 - The network access token
 - The location and identity of the approved root
@@ -19,12 +20,13 @@ Private Capture should:
 - make retries safe;
 - avoid putting note contents, titles, URLs, tokens, or absolute paths in routine logs;
 - keep Health Journal search and filter text out of URLs, logs, analytics, and third-party services;
+- keep voice transcription local, bounded, and reviewable before any write;
 - require authentication and HTTPS for network use;
 - remain useful without sending data to a third party.
 
 ## Assumptions
 
-The host operating system, Node.js runtime, and local user account are trusted. The approved root is on a filesystem that supports normal file permissions and atomic hard links. Mirrored cloud folders generally meet that requirement; virtual or streamed filesystems may not.
+The host operating system, Node.js runtime, local user account, and any optional local speech engine are trusted. The approved root is on a filesystem that supports normal file permissions and atomic hard links. Mirrored cloud folders generally meet that requirement; virtual or streamed filesystems may not.
 
 The reverse proxy is trusted to set `X-Forwarded-Proto` correctly. Only the reverse proxy should be able to reach the loopback server in a network deployment.
 
@@ -34,6 +36,7 @@ Private Capture does not protect against:
 
 - malware or another process running as the same operating-system user;
 - a compromised server, browser, reverse proxy, VPN, or sync provider;
+- a compromised or incorrectly configured local speech engine;
 - someone with physical access to an unlocked device;
 - disclosure from unencrypted disks, swap, backups, or synced copies;
 - a malicious Obsidian plugin that can read the vault;
@@ -60,3 +63,9 @@ The token is still a bearer secret. Keep it in a password manager, rotate it if 
 Sync tools can propagate deletion and corruption. They are not backups. Prefer mirrored or always-offline folders, wait for synchronization before changing providers, and do not run two independent bidirectional sync engines over the same vault.
 
 Unique append-only filenames reduce ordinary conflicts, but they cannot make a broken sync provider safe.
+
+## Voice risks
+
+Private Capture accepts voice clips only after an explicit recording action. The browser stops recording at the configured duration; the server enforces MIME and byte bounds and forwards the result only to an HTTP endpoint on loopback without following redirects. The speech engine is not exposed through the browser. The transcript router is deterministic and produces a proposal; it cannot write a record or submit a form.
+
+Browser microphone permission remains a sensitive capability. Use trusted HTTPS, keep the reverse proxy and host patched, and revoke site permission when you no longer want the site to access the microphone. Review the speech engine's own temporary-file and logging behavior before using it for sensitive recordings.

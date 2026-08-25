@@ -6,9 +6,15 @@ import type { LoadedConfiguration } from "../core/config.ts";
 import { loadApprovedRoot, verifyApprovedRoot } from "../core/safe-files.ts";
 import { CaptureStore, RecordConflictError } from "../core/store.ts";
 import { HealthConflictError, HealthStore } from "../core/health-store.ts";
+import { CarConflictError, CarStore } from "../core/car-store.ts";
+import type { VehicleEventInput, VehicleProfileInput } from "../core/car.ts";
+import { WorkoutConflictError, WorkoutStore } from "../core/workout-store.ts";
+import type { WorkoutInput } from "../core/workout.ts";
 import type { HealthEventInput } from "../core/health.ts";
 import type { CaptureInput, ReviewClassification } from "../core/records.ts";
+import { routeVoiceTranscript } from "../core/voice.ts";
 import { SessionAuth } from "./auth.ts";
+import { MAX_VOICE_BYTES, transcribeVoiceAudio, voiceSettingsFromEnvironment, type VoiceTranscriptionSettings } from "./voice-transcription.ts";
 
 const moduleDirectory = path.dirname(fileURLToPath(import.meta.url));
 const webDirectory = path.resolve(moduleDirectory, "../../web");
@@ -17,8 +23,14 @@ const STATIC_FILES: Record<string, { file: string; type: string }> = {
   "/": { file: "index.html", type: "text/html; charset=utf-8" },
   "/app.js": { file: "app.js", type: "text/javascript; charset=utf-8" },
   "/health.js": { file: "health.js", type: "text/javascript; charset=utf-8" },
+  "/car.js": { file: "car.js", type: "text/javascript; charset=utf-8" },
+  "/workout.js": { file: "workout.js", type: "text/javascript; charset=utf-8" },
+  "/voice.js": { file: "voice.js", type: "text/javascript; charset=utf-8" },
   "/styles.css": { file: "styles.css", type: "text/css; charset=utf-8" },
   "/health.css": { file: "health.css", type: "text/css; charset=utf-8" },
+  "/car.css": { file: "car.css", type: "text/css; charset=utf-8" },
+  "/workout.css": { file: "workout.css", type: "text/css; charset=utf-8" },
+  "/voice.css": { file: "voice.css", type: "text/css; charset=utf-8" },
   "/manifest.webmanifest": { file: "manifest.webmanifest", type: "application/manifest+json; charset=utf-8" },
   "/service-worker.js": { file: "service-worker.js", type: "text/javascript; charset=utf-8" },
   "/icon-192.png": { file: "icon-192.png", type: "image/png" },
@@ -33,7 +45,7 @@ function securityHeaders(isApi = false) {
     "Content-Security-Policy": "default-src 'self'; script-src 'self'; style-src 'self'; connect-src 'self'; img-src 'self' data:; manifest-src 'self'; worker-src 'self'; base-uri 'none'; form-action 'self'; frame-ancestors 'none'",
     "X-Content-Type-Options": "nosniff",
     "Referrer-Policy": "no-referrer",
-    "Permissions-Policy": "camera=(), microphone=(), geolocation=(), payment=()",
+    "Permissions-Policy": "camera=(), microphone=(self), geolocation=(), payment=()",
   };
 }
 
@@ -102,11 +114,26 @@ async function readJson(request: IncomingMessage) {
   }
 }
 
-export async function startServer(loaded: LoadedConfiguration, options: { host: string; port: number }) {
+async function readBytes(request: IncomingMessage, maximum: number) {
+  const chunks: Buffer[] = [];
+  let size = 0;
+  for await (const chunk of request) {
+    const buffer = Buffer.from(chunk);
+    size += buffer.length;
+    if (size > maximum) throw Object.assign(new Error("The recording is too large."), { statusCode: 413 });
+    chunks.push(buffer);
+  }
+  return new Uint8Array(Buffer.concat(chunks));
+}
+
+export async function startServer(loaded: LoadedConfiguration, options: { host: string; port: number; voiceSettings?: VoiceTranscriptionSettings | null }) {
   const root = await loadApprovedRoot(loaded.value);
   const store = new CaptureStore(root);
   const healthStore = new HealthStore(root);
+  const carStore = new CarStore(root);
+  const workoutStore = new WorkoutStore(root);
   const auth = new SessionAuth(loaded.value);
+  const voiceSettings = options.voiceSettings === undefined ? voiceSettingsFromEnvironment() : options.voiceSettings;
   let latestWriteAt: string | null = null;
 
   const server = createServer((request, response) => {
@@ -140,6 +167,32 @@ export async function startServer(loaded: LoadedConfiguration, options: { host: 
         });
       }
 
+      if (request.method === "GET" && url.pathname === "/api/v1/voice/meta") {
+        await verifyApprovedRoot(root);
+        return sendJson(response, 200, {
+          configured: Boolean(voiceSettings),
+          language: voiceSettings?.language || "en",
+          max_seconds: voiceSettings?.maxSeconds || 120,
+          local_only: true,
+          saves_automatically: false,
+        });
+      }
+
+      if (request.method === "POST" && url.pathname === "/api/v1/voice/route") {
+        await verifyApprovedRoot(root);
+        const payload = await readJson(request) as { transcript?: unknown };
+        return sendJson(response, 200, { proposal: routeVoiceTranscript(payload.transcript) });
+      }
+
+      if (request.method === "POST" && url.pathname === "/api/v1/voice/transcribe") {
+        await verifyApprovedRoot(root);
+        if (!voiceSettings) return sendJson(response, 503, { error: { code: "voice_not_configured", message: "Local transcription is not configured on this server." } });
+        const contentType = request.headers["content-type"] || "";
+        const audio = await readBytes(request, MAX_VOICE_BYTES);
+        const transcript = await transcribeVoiceAudio(audio, contentType, voiceSettings);
+        return sendJson(response, 200, { transcript, proposal: routeVoiceTranscript(transcript) });
+      }
+
       if (request.method === "GET" && url.pathname === "/api/v1/captures") {
         const captures = await store.list();
         return sendJson(response, 200, { captures });
@@ -151,6 +204,53 @@ export async function startServer(loaded: LoadedConfiguration, options: { host: 
 
       if (request.method === "GET" && url.pathname === "/api/v1/health-events") {
         return sendJson(response, 200, { events: await healthStore.list() });
+      }
+
+      if (request.method === "GET" && url.pathname === "/api/v1/car/meta") {
+        return sendJson(response, 200, carStore.metadata());
+      }
+
+      if (request.method === "GET" && url.pathname === "/api/v1/vehicles") {
+        return sendJson(response, 200, { vehicles: await carStore.vehicles() });
+      }
+
+      if (request.method === "POST" && url.pathname === "/api/v1/vehicles") {
+        const idempotencyKey = request.headers["idempotency-key"];
+        if (Array.isArray(idempotencyKey) || !idempotencyKey) throw Object.assign(new Error("Send one Idempotency-Key header."), { statusCode: 400 });
+        const payload = await readJson(request) as VehicleProfileInput;
+        const result = await carStore.saveVehicle(payload, idempotencyKey);
+        latestWriteAt = result.receipt.durable_at;
+        return sendJson(response, result.created ? 201 : 200, { vehicle: result.record, receipt: result.receipt, replayed: !result.created });
+      }
+
+      if (request.method === "GET" && url.pathname === "/api/v1/vehicle-events") {
+        return sendJson(response, 200, { events: await carStore.events() });
+      }
+
+      if (request.method === "POST" && url.pathname === "/api/v1/vehicle-events") {
+        const idempotencyKey = request.headers["idempotency-key"];
+        if (Array.isArray(idempotencyKey) || !idempotencyKey) throw Object.assign(new Error("Send one Idempotency-Key header."), { statusCode: 400 });
+        const payload = await readJson(request) as VehicleEventInput;
+        const result = await carStore.saveEvent(payload, idempotencyKey);
+        latestWriteAt = result.receipt.durable_at;
+        return sendJson(response, result.created ? 201 : 200, { event: result.record, receipt: result.receipt, replayed: !result.created });
+      }
+
+      if (request.method === "GET" && url.pathname === "/api/v1/workout/meta") {
+        return sendJson(response, 200, workoutStore.metadata());
+      }
+
+      if (request.method === "GET" && url.pathname === "/api/v1/workout-events") {
+        return sendJson(response, 200, { events: await workoutStore.list() });
+      }
+
+      if (request.method === "POST" && url.pathname === "/api/v1/workout-events") {
+        const idempotencyKey = request.headers["idempotency-key"];
+        if (Array.isArray(idempotencyKey) || !idempotencyKey) throw Object.assign(new Error("Send one Idempotency-Key header."), { statusCode: 400 });
+        const payload = await readJson(request) as WorkoutInput;
+        const result = await workoutStore.save(payload, idempotencyKey);
+        latestWriteAt = result.receipt.durable_at;
+        return sendJson(response, result.created ? 201 : 200, { event: result.record, receipt: result.receipt, replayed: !result.created });
       }
 
       if (request.method === "POST" && url.pathname === "/api/v1/health-events") {
@@ -199,9 +299,10 @@ export async function startServer(loaded: LoadedConfiguration, options: { host: 
     };
 
     route().catch((error: unknown) => {
-      const status = error instanceof RecordConflictError || error instanceof HealthConflictError ? 409 : typeof error === "object" && error && "statusCode" in error ? Number(error.statusCode) : 400;
+      const conflict = error instanceof RecordConflictError || error instanceof HealthConflictError || error instanceof CarConflictError || error instanceof WorkoutConflictError;
+      const status = conflict ? 409 : typeof error === "object" && error && "statusCode" in error ? Number(error.statusCode) : 400;
       const message = error instanceof Error ? error.message : "The request could not be completed.";
-      sendJson(response, Number.isInteger(status) && status >= 400 && status <= 599 ? status : 500, { error: { code: error instanceof RecordConflictError || error instanceof HealthConflictError ? "record_conflict" : "request_failed", message } });
+      sendJson(response, Number.isInteger(status) && status >= 400 && status <= 599 ? status : 500, { error: { code: conflict ? "record_conflict" : "request_failed", message } });
     });
   });
 

@@ -102,7 +102,7 @@ function activate() {
   else renderJournal();
 }
 
-window.healthJournal = { activate };
+window.healthJournal = { activate, openVoiceDraft };
 
 window.addEventListener("private-capture:write-state", (event) => {
   writeEnabled = event.detail?.enabled === true;
@@ -404,6 +404,35 @@ function openEditor(event = null, requestedCategory = "") {
   }
   if (typeof dialog.showModal === "function") dialog.showModal();
   else dialog.setAttribute("open", "");
+}
+
+async function openVoiceDraft(proposal) {
+  if (!loaded) await loadJournal();
+  if (!loaded) return { ok: false, message: "The Health Journal could not be loaded." };
+  window.privateCapture?.showView("health");
+  const fields = proposal?.fields || {};
+  const existingDraft = restoreHealthDraft();
+  const requestedCategory = categories.some((category) => category.slug === fields.category) ? fields.category : "symptoms";
+  openEditor(null, existingDraft ? "" : requestedCategory);
+  const transcript = String(proposal?.transcript || "").trim();
+  const existingNotes = healthForm.elements.notes.value.trim();
+  healthForm.elements.notes.value = existingNotes ? `${existingNotes}\n\n${transcript}` : transcript;
+  if (!existingDraft) {
+    if (typeof fields.title === "string" && fields.title.trim()) healthForm.elements.title.value = fields.title;
+    if (typeof fields.symptoms === "string") {
+      healthForm.elements.symptoms.value = fields.symptoms;
+      moreDetails.open = true;
+    }
+    if (fields.details && typeof fields.details === "object") {
+      Object.entries(fields.details).forEach(([key, value]) => {
+        const input = guidedFields.querySelector(`[data-detail-key="${key}"]`);
+        if (input) input.value = String(value);
+      });
+    }
+  }
+  scheduleHealthDraft();
+  healthForm.elements.notes.focus();
+  return { ok: true };
 }
 
 function fillCommonFields(event) {
