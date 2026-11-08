@@ -33,7 +33,6 @@ let metadata = { configured: false, language: "en", max_seconds: 120 };
 let metadataLoaded = false;
 let mediaRecorder = null;
 let mediaStream = null;
-let audioChunks = [];
 let recordingStartedAt = 0;
 let recordingTimer = null;
 let stopTimer = null;
@@ -42,6 +41,8 @@ let currentProposal = null;
 let selectedDestination = "capture";
 let transcriptionController = null;
 let transcribing = false;
+let startingRecording = false;
+let voiceGeneration = 0;
 
 class VoiceApiError extends Error {
   constructor(message, statusCode) {
@@ -100,14 +101,19 @@ function renderEngineState() {
 }
 
 function openVoice() {
+  if (dialog.open) return;
   resetToCapture(false);
   if (typeof dialog.showModal === "function") dialog.showModal(); else dialog.setAttribute("open", "");
   void loadMetadata();
 }
 
 function closeVoice() {
+  voiceGeneration += 1;
+  startingRecording = false;
   discardRecording = true;
   transcriptionController?.abort();
+  transcriptionController = null;
+  transcribing = false;
   if (mediaRecorder?.state === "recording") mediaRecorder.stop();
   releaseMicrophone();
   if (typeof dialog.close === "function") dialog.close(); else dialog.removeAttribute("open");
@@ -118,6 +124,8 @@ function resetToCapture(clearTranscript = true) {
   captureStep.hidden = false;
   reviewStep.hidden = true;
   recordButton.className = "voice-orb";
+  recordButton.disabled = false;
+  recordButton.setAttribute("aria-label", "Start recording");
   status.className = "voice-status";
   status.textContent = "";
   reviewStatus.className = "voice-status";
@@ -133,43 +141,62 @@ function resetToCapture(clearTranscript = true) {
 }
 
 async function toggleRecording() {
-  if (transcribing) return;
-  if (mediaRecorder?.state === "recording") return mediaRecorder.stop();
-  if (!metadataLoaded) await loadMetadata();
-  if (!metadata.configured) {
-    status.className = "voice-status error";
-    status.textContent = "Connect a local transcription engine on the Linux host first. You can test routing with typed text below.";
-    fallback.open = true;
-    manualTranscript.focus();
+  if (transcribing || startingRecording || !dialog.open) return;
+  if (mediaRecorder) {
+    if (mediaRecorder.state === "recording") mediaRecorder.stop();
     return;
   }
-  if (!microphoneAvailable()) {
-    status.className = "voice-status error";
-    status.textContent = "Microphone capture requires HTTPS and browser permission.";
-    return;
-  }
+  const generation = voiceGeneration;
+  startingRecording = true;
+  recordButton.disabled = true;
   try {
-    mediaStream = await navigator.mediaDevices.getUserMedia({ audio: { echoCancellation: true, noiseSuppression: true }, video: false });
+    if (!metadataLoaded) await loadMetadata();
+    if (generation !== voiceGeneration || !dialog.open) return;
+    if (!metadata.configured) {
+      status.className = "voice-status error";
+      status.textContent = "Connect a local transcription engine on the Linux host first. You can test routing with typed text below.";
+      fallback.open = true;
+      manualTranscript.focus();
+      return;
+    }
+    if (!microphoneAvailable()) {
+      status.className = "voice-status error";
+      status.textContent = "Microphone capture requires HTTPS and browser permission.";
+      return;
+    }
+    const stream = await navigator.mediaDevices.getUserMedia({ audio: { echoCancellation: true, noiseSuppression: true }, video: false });
+    if (generation !== voiceGeneration || !dialog.open) {
+      stream.getTracks().forEach((track) => track.stop());
+      return;
+    }
+    mediaStream = stream;
     const preferredTypes = ["audio/webm;codecs=opus", "audio/mp4", "audio/webm", "audio/ogg;codecs=opus"];
     const mimeType = preferredTypes.find((candidate) => MediaRecorder.isTypeSupported(candidate));
-    mediaRecorder = new MediaRecorder(mediaStream, mimeType ? { mimeType } : undefined);
-    audioChunks = [];
+    const recorder = new MediaRecorder(stream, mimeType ? { mimeType } : undefined);
+    const chunks = [];
+    mediaRecorder = recorder;
     discardRecording = false;
-    mediaRecorder.addEventListener("dataavailable", (event) => { if (event.data.size) audioChunks.push(event.data); });
-    mediaRecorder.addEventListener("stop", finishRecording, { once: true });
-    mediaRecorder.start(1000);
+    recorder.addEventListener("dataavailable", (event) => { if (event.data.size) chunks.push(event.data); });
+    recorder.addEventListener("stop", () => finishRecording(recorder, chunks, generation), { once: true });
+    recorder.start(1000);
     recordingStartedAt = Date.now();
     recordButton.className = "voice-orb recording";
     recordButton.setAttribute("aria-label", "Stop recording");
     recordLabel.textContent = "Listening…";
     status.textContent = "Tap again when you’re finished.";
     recordingTimer = window.setInterval(updateTimer, 250);
-    stopTimer = window.setTimeout(() => { if (mediaRecorder?.state === "recording") mediaRecorder.stop(); }, metadata.max_seconds * 1000);
+    stopTimer = window.setTimeout(() => { if (recorder.state === "recording") recorder.stop(); }, metadata.max_seconds * 1000);
     updateTimer();
   } catch (error) {
+    if (generation !== voiceGeneration) return;
     releaseMicrophone();
     status.className = "voice-status error";
     status.textContent = error instanceof Error && error.name === "NotAllowedError" ? "Microphone permission was not granted. Typed routing is still available below." : "The microphone could not start on this device.";
+  } finally {
+    if (generation === voiceGeneration) {
+      startingRecording = false;
+      recordButton.disabled = false;
+    }
   }
 }
 
@@ -178,11 +205,12 @@ function updateTimer() {
   timerLabel.textContent = `${formatDuration(elapsed)} · ${formatDuration(Math.max(0, metadata.max_seconds - elapsed))} left`;
 }
 
-async function finishRecording() {
+async function finishRecording(recorder, recordedChunks, generation) {
+  if (generation !== voiceGeneration || mediaRecorder !== recorder) return;
   window.clearInterval(recordingTimer);
   window.clearTimeout(stopTimer);
-  const chunks = audioChunks.slice();
-  const type = mediaRecorder?.mimeType || chunks[0]?.type || "audio/webm";
+  const chunks = recordedChunks.slice();
+  const type = recorder.mimeType || chunks[0]?.type || "audio/webm";
   releaseMicrophone();
   recordButton.setAttribute("aria-label", "Start recording");
   if (discardRecording) return;
@@ -194,16 +222,19 @@ async function finishRecording() {
   timerLabel.textContent = "on your local server";
   status.textContent = "Turning your words into an editable draft.";
   transcribing = true;
-  transcriptionController = new AbortController();
+  const controller = new AbortController();
+  transcriptionController = controller;
   try {
-    const payload = await voiceApi("/api/v1/voice/transcribe", { method: "POST", headers: { "Content-Type": audio.type }, body: audio, signal: transcriptionController.signal });
-    if (dialog.open) showReview(payload.proposal);
+    const payload = await voiceApi("/api/v1/voice/transcribe", { method: "POST", headers: { "Content-Type": audio.type }, body: audio, signal: controller.signal });
+    if (generation === voiceGeneration && dialog.open) showReview(payload.proposal);
   } catch (error) {
-    if (dialog.open && !(error instanceof Error && error.name === "AbortError")) showCaptureError(error instanceof Error ? error.message : "The recording could not be transcribed.");
+    if (generation === voiceGeneration && dialog.open && !(error instanceof Error && error.name === "AbortError")) showCaptureError(error instanceof Error ? error.message : "The recording could not be transcribed.");
   } finally {
-    transcriptionController = null;
-    transcribing = false;
-    recordButton.disabled = false;
+    if (transcriptionController === controller) {
+      transcriptionController = null;
+      transcribing = false;
+      recordButton.disabled = false;
+    }
   }
 }
 
@@ -213,7 +244,6 @@ function releaseMicrophone() {
   mediaStream?.getTracks().forEach((track) => track.stop());
   mediaStream = null;
   mediaRecorder = null;
-  audioChunks = [];
 }
 
 function showCaptureError(message) {
@@ -250,10 +280,7 @@ function showReview(proposal) {
   transcriptField.value = proposal.transcript;
   captureStep.hidden = true;
   reviewStep.hidden = false;
-  confidence.textContent = proposal.confidence_label;
-  proposalReason.textContent = proposal.reason;
   renderDestination();
-  renderExtracted(proposal.fields);
   transcriptField.focus();
 }
 
@@ -264,8 +291,13 @@ function renderDestination() {
     button.setAttribute("aria-pressed", String(selected));
   });
   const destination = DESTINATIONS[selectedDestination];
+  const matchesProposal = currentProposal?.destination === selectedDestination;
+  const subtype = matchesProposal ? currentProposal?.subtype : undefined;
   proposalMark.textContent = destination.mark;
-  proposalTitle.textContent = `${destination.label}${currentProposal?.subtype ? ` · ${capitalize(currentProposal.subtype)}` : ""}`;
+  proposalTitle.textContent = `${destination.label}${subtype ? ` · ${capitalize(subtype)}` : ""}`;
+  confidence.textContent = matchesProposal ? currentProposal.confidence_label : "your choice";
+  proposalReason.textContent = matchesProposal ? currentProposal.reason : `Choose the details in the ${destination.label} form. Your full transcript will be included.`;
+  renderExtracted(matchesProposal ? currentProposal.fields : {});
   continueButton.childNodes[0].textContent = `Continue in ${destination.label} `;
 }
 
@@ -291,7 +323,9 @@ async function continueToDestination() {
   reviewStatus.textContent = "Preparing an editable draft…";
   try {
     const refreshed = await routeTranscript(transcript);
-    const proposal = { ...refreshed.proposal, destination: selectedDestination, transcript };
+    const proposal = refreshed.proposal.destination === selectedDestination
+      ? { ...refreshed.proposal, transcript }
+      : { destination: selectedDestination, transcript, fields: {} };
     const handlers = {
       capture: window.privateCapture?.openVoiceDraft,
       health: window.healthJournal?.openVoiceDraft,
@@ -335,6 +369,7 @@ launcher.addEventListener("click", openVoice);
 closeButton.addEventListener("click", closeVoice);
 dialog.addEventListener("click", (event) => { if (event.target === dialog) closeVoice(); });
 dialog.addEventListener("cancel", (event) => { event.preventDefault(); closeVoice(); });
+window.addEventListener("pagehide", closeVoice);
 recordButton.addEventListener("click", toggleRecording);
 routeManualButton.addEventListener("click", routeManualTranscript);
 startOverButton.addEventListener("click", () => resetToCapture(true));

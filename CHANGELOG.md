@@ -4,6 +4,11 @@ All notable changes will be documented here. The format follows [Keep a Changelo
 
 ## [Unreleased]
 
+### Fixed
+
+- Closing voice capture or leaving the page now cancels pending microphone permission and releases recordings, including delayed browser events
+- Manual voice destination changes no longer carry unrelated extracted fields into the selected form
+
 ### Added
 
 - Optional voice inbox with local transcription, editable destination proposals, and reviewed handoff to Capture, Health, Car, or Workout

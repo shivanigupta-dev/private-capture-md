@@ -1,5 +1,5 @@
-const CACHE_NAME = "private-capture-shell-v13";
-const SHELL = ["/", "/styles.css", "/health.css", "/car.css?v=1", "/workout.css?v=1", "/voice.css?v=1", "/app.js?v=2", "/health.js?v=2", "/car.js?v=2", "/workout.js?v=2", "/voice.js?v=1", "/manifest.webmanifest", "/icon-192.png", "/icon-512.png"];
+const CACHE_NAME = "private-capture-shell-v14";
+const SHELL = ["/", "/styles.css", "/health.css", "/car.css?v=1", "/workout.css?v=1", "/voice.css?v=1", "/app.js?v=2", "/health.js?v=2", "/car.js?v=2", "/workout.js?v=2", "/voice.js?v=2", "/manifest.webmanifest", "/icon-192.png", "/icon-512.png"];
 
 self.addEventListener("install", (event) => {
   event.waitUntil(caches.open(CACHE_NAME).then((cache) => cache.addAll(SHELL)).then(() => self.skipWaiting()));
